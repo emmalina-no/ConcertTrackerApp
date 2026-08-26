@@ -1,12 +1,45 @@
-import { Tabs } from 'expo-router';
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 
 export default function TabsLayout() {
-  return (
-    <Tabs>
-      <Tabs.Screen name="index" options={{ title: 'Past' }} />
-      <Tabs.Screen name="upcoming" options={{ title: 'Upcoming' }} />
-      <Tabs.Screen name="stats" options={{ title: 'Stats' }} />
-      <Tabs.Screen name="library" options={{ title: 'Library' }} />
-    </Tabs>
-  );
+	return (
+		<Tabs>
+			<Tabs.Screen
+				name="index"
+				options={{
+					title: "Seen",
+					tabBarIcon: ({ color, size }) => (
+						<Ionicons name="musical-notes" size={size} color={color} />
+					),
+				}}
+			/>
+			<Tabs.Screen
+				name="upcoming"
+				options={{
+					title: "Upcoming",
+					tabBarIcon: ({ color, size }) => (
+						<Ionicons name="calendar" size={size} color={color} />
+					),
+				}}
+			/>
+			<Tabs.Screen
+				name="stats"
+				options={{
+					title: "Stats",
+					tabBarIcon: ({ color, size }) => (
+						<Ionicons name="bar-chart" size={size} color={color} />
+					),
+				}}
+			/>
+			<Tabs.Screen
+				name="library"
+				options={{
+					title: "Library",
+					tabBarIcon: ({ color, size }) => (
+						<Ionicons name="library" size={size} color={color} />
+					),
+				}}
+			/>
+		</Tabs>
+	);
 }
