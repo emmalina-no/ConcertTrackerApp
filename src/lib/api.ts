@@ -60,6 +60,36 @@ export async function listArtists(): Promise<Artist[]> {
   return data;
 }
 
+export async function updateArtist(id: string, name: string): Promise<void> {
+  const { error } = await supabase.from('artists').update({ name }).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteArtist(id: string): Promise<void> {
+  const { error } = await supabase.from('artists').delete().eq('id', id);
+  if (error) {
+    if (error.code === '23503') {
+      throw new Error('This artist is used in one or more concerts. Remove them from those concerts first.');
+    }
+    throw error;
+  }
+}
+
+export async function updateVenue(id: string, values: { name: string; city: string; country: string }): Promise<void> {
+  const { error } = await supabase.from('venues').update(values).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteVenue(id: string): Promise<void> {
+  const { error } = await supabase.from('venues').delete().eq('id', id);
+  if (error) {
+    if (error.code === '23503') {
+      throw new Error('This venue has concerts logged at it. Edit or delete those concerts first.');
+    }
+    throw error;
+  }
+}
+
 export async function getEvents(filter: 'past' | 'upcoming'): Promise<ConcertEvent[]> {
   const today = todayISO();
   let query = supabase.from('events').select(EVENT_SELECT);

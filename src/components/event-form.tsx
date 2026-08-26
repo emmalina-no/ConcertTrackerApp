@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from 'react-native';
 
-import { ArtistNameField } from '@/components/artist-name-field';
+import { ArtistPicker } from '@/components/artist-picker';
 import { DateField } from '@/components/date-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedTextInput } from '@/components/themed-text-input';
@@ -9,17 +9,8 @@ import { ThemedView } from '@/components/themed-view';
 import { VenuePicker } from '@/components/venue-picker';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { listArtists, listVenues } from '@/lib/api';
+import { confirm } from '@/lib/confirm';
 import type { Artist, EventFormValues, Venue } from '@/lib/types';
-
-function confirm(message: string): Promise<boolean> {
-  if (Platform.OS === 'web') return Promise.resolve(window.confirm(message));
-  return new Promise((resolve) => {
-    Alert.alert('Are you sure?', message, [
-      { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-      { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-    ]);
-  });
-}
 
 const emptyArtist = () => ({ name: '', playedDate: '' });
 
@@ -165,7 +156,7 @@ export function EventForm({
         </ThemedText>
         {values.artists.map((artist, index) => (
           <ThemedView key={index} type="backgroundElement" style={styles.artistRow}>
-            <ArtistNameField artists={artists} value={artist.name} onChangeText={(name) => updateArtist(index, { name })} />
+            <ArtistPicker artists={artists} value={artist.name} onChange={(name) => updateArtist(index, { name })} />
             <DateField value={artist.playedDate} onChange={(playedDate) => updateArtist(index, { playedDate })} placeholder="Played date" />
             <Pressable onPress={() => handleRemoveArtist(index)} style={styles.removeButton}>
               <ThemedText type="link">Remove</ThemedText>
