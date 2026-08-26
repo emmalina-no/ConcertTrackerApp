@@ -1,56 +1,90 @@
-# Welcome to your Expo app 👋
+# Concert Tracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A personal app for logging concerts and festivals: which bands you saw, when, where, and stats like your most-seen artists and busiest year. Runs on web, iOS, and Android from one codebase.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- **Client**: [Expo](https://expo.dev) + [Expo Router](https://docs.expo.dev/router/introduction/) (file-based routing) + TypeScript + React Native, targeting web, iOS, and Android from the same code.
+- **Backend**: [Supabase](https://supabase.com) — hosted Postgres, auth, and a client SDK. No custom server; the app talks to Supabase directly.
+- **Data model**: `venues` → `events` → `event_artists` → `artists`. An event (concert or festival) belongs to one venue and has many `event_artists` rows, each pairing an artist with the specific date they played (so multi-day festivals work naturally). Every table is scoped to the logged-in user via Row Level Security.
 
-   ```bash
-   npm install
-   ```
+## Setup
 
-2. Start the app
+1. Create a free Supabase project, then run `supabase/schema.sql` in its SQL editor to create the tables and RLS policies.
+2. Copy `.env.example` to `.env` and fill in your project's values (see the Supabase dashboard's "Connect" dialog — Framework tab for the URL/publishable key, Server tab for the secret key).
+3. `npm install`
+4. `npm run web` (browser) or `npm start` (Expo Go on your phone). Sign up once from the login screen — first time creates your account.
 
-   ```bash
-   npx expo start
-   ```
+## Project structure
 
-In the output, you'll find options to open the app in a
+```
+src/
+  app/                  Expo Router screens (file-based: file path = route)
+    _layout.tsx          Root layout — wraps the app in AuthProvider and guards
+                          routes: signed out → login, signed in → (tabs)/event screens
+    login.tsx            Email/password sign in & sign up
+    (tabs)/               Bottom tab navigator
+      _layout.tsx          Tab definitions (Past, Upcoming, Stats, Library)
+      index.tsx            Past concerts list
+      upcoming.tsx          Upcoming concerts list
+      stats.tsx             Most-seen artists, unique artist count, concerts per
+                            year, busiest year, countries visited
+      library.tsx           Browse/edit/delete existing artists and venues
+                            (toggle between the two)
+    event/
+      new.tsx              Create a concert
+      [id].tsx             Edit or delete an existing concert
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+  components/           Reusable UI, one component per file
+    event-form.tsx        The shared create/edit form used by event/new and
+                          event/[id] — name, dates, venue, artist lineup, delete
+    venue-picker.tsx       Search existing venues / create a new one (used in
+                          event-form) — collapses to a summary once picked
+    artist-picker.tsx      Same pattern as venue-picker, for artists
+    artist-row.tsx         A row in the Library screen's artist list, with
+                          inline edit/delete
+    venue-row.tsx          Same, for venues
+    date-field.tsx          Native date picker (iOS/Android)
+    date-field.web.tsx      Web override — plain `<input type="date">`, since
+                          the native picker library has no web build. Metro
+                          picks whichever file matches the target platform.
+    event-list-item.tsx    A single concert card in the Past/Upcoming lists
+    event-list-screen.tsx  Shared list+FAB layout used by both Past and Upcoming
+    themed-*.tsx            Theme-aware Text/View/TextInput wrappers — use
+                          these instead of raw RN components so light/dark
+                          mode always has correct contrast
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+  lib/                  Non-UI logic
+    supabase.ts            Supabase client setup (reads env vars)
+    api.ts                 All database queries/mutations live here — screens
+                          never call supabase.from(...) directly
+    auth-context.tsx       React context exposing the current session
+    confirm.ts             Cross-platform confirm() dialog (browser confirm()
+                          on web, native Alert elsewhere) — used before deletes
+    types.ts               Shared TypeScript types for the data model
 
-## Get a fresh project
+  hooks/
+    use-event-list.ts      Fetches past/upcoming events, refetches on screen
+                          focus (so edits elsewhere show up when you come back)
+    use-theme.ts            Resolves the current light/dark color palette
 
-When you're ready, run:
+  constants/theme.ts      Colors, spacing scale, fonts used throughout
 
-```bash
-npm run reset-project
+supabase/schema.sql     Database schema + Row Level Security policies — run
+                        this once in the Supabase SQL editor
+scripts/import-csv.ts   One-time importer for historical data from a CSV —
+                        see the comment at the top of the file for the
+                        expected column format and how to run it
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## How data flows
 
-### Other setup steps
+Screens call functions from `lib/api.ts`, never Supabase directly. `api.ts` handles "find or create" for venues and artists (so typing a venue/artist name that already exists reuses the same row instead of creating a duplicate), and computes the stats screen's numbers client-side from all your events (fine at personal-library scale).
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Importing historical data
 
-## Learn more
+If you're migrating from a spreadsheet, reshape it to one row per artist-performance (columns documented at the top of `scripts/import-csv.ts`), set `SUPABASE_SERVICE_ROLE_KEY` in `.env`, then:
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm run import-csv -- path/to/your-file.csv
+```
