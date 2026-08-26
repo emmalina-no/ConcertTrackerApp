@@ -35,6 +35,16 @@ function requireId(data: { id: string } | null, error: { message: string } | nul
   return data.id;
 }
 
+// Converts "DD.MM.YYYY" to "YYYY-MM-DD" for Postgres date columns. Passes through
+// anything already in YYYY-MM-DD form (or empty), since some rows/columns are optional.
+function toIsoDate(value: string): string {
+  if (!value) return value;
+  const match = value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (!match) return value;
+  const [, day, month, year] = match;
+  return `${year}-${month}-${day}`;
+}
+
 async function main() {
   const csvPath = process.argv[2];
   if (!csvPath) {
@@ -66,6 +76,7 @@ async function main() {
     columns: true,
     skip_empty_lines: true,
     trim: true,
+    delimiter: ';',
   }) as Row[];
 
   console.log(`Parsed ${rows.length} rows from ${csvPath}`);
@@ -102,7 +113,11 @@ async function main() {
       artistIdByName.set(row.artist_name, artistId);
     }
 
-    const eventKey = `${row.event_name}|${row.event_start_date}`;
+    const startDate = toIsoDate(row.event_start_date);
+    const endDate = toIsoDate(row.event_end_date) || startDate;
+    const playedDate = toIsoDate(row.played_date) || startDate;
+
+    const eventKey = `${row.event_name}|${startDate}`;
     let eventId = eventIdByKey.get(eventKey);
     if (!eventId) {
       const { data, error } = await supabase
@@ -112,8 +127,8 @@ async function main() {
             user_id: userId,
             name: row.event_name,
             venue_id: venueId,
-            start_date: row.event_start_date,
-            end_date: row.event_end_date || row.event_start_date,
+            start_date: startDate,
+            end_date: endDate,
             notes: row.notes || null,
           },
           { onConflict: 'user_id,name,start_date' }
@@ -127,7 +142,7 @@ async function main() {
     const { error } = await supabase
       .from('event_artists')
       .upsert(
-        { event_id: eventId, artist_id: artistId, played_date: row.played_date || row.event_start_date },
+        { event_id: eventId, artist_id: artistId, played_date: playedDate },
         { onConflict: 'event_id,artist_id,played_date', ignoreDuplicates: true }
       );
     if (error) throw error;
