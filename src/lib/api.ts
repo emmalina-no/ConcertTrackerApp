@@ -85,6 +85,26 @@ export async function listArtists(): Promise<Artist[]> {
 	return data;
 }
 
+export async function getArtist(id: string): Promise<Artist> {
+	const { data, error } = await supabase
+		.from("artists")
+		.select("*")
+		.eq("id", id)
+		.single();
+	if (error) throw error;
+	return data;
+}
+
+export async function getVenue(id: string): Promise<Venue> {
+	const { data, error } = await supabase
+		.from("venues")
+		.select("*")
+		.eq("id", id)
+		.single();
+	if (error) throw error;
+	return data;
+}
+
 export async function updateArtist(id: string, name: string): Promise<void> {
 	const { error } = await supabase
 		.from("artists")
@@ -149,6 +169,32 @@ export async function getEvent(id: string): Promise<ConcertEvent> {
 		.single();
 	if (error) throw error;
 	return data as unknown as ConcertEvent;
+}
+
+export async function getEventsForArtist(
+	artistId: string,
+): Promise<ConcertEvent[]> {
+	const { data, error } = await supabase
+		.from("events")
+		.select(
+			"*, venue:venues(*), event_artists!inner(id, artist_id, played_date, artist:artists(*))",
+		)
+		.eq("event_artists.artist_id", artistId)
+		.order("start_date", { ascending: false });
+	if (error) throw error;
+	return data as unknown as ConcertEvent[];
+}
+
+export async function getEventsForVenue(
+	venueId: string,
+): Promise<ConcertEvent[]> {
+	const { data, error } = await supabase
+		.from("events")
+		.select(EVENT_SELECT)
+		.eq("venue_id", venueId)
+		.order("start_date", { ascending: false });
+	if (error) throw error;
+	return data as unknown as ConcertEvent[];
 }
 
 export async function createEvent(values: EventFormValues): Promise<string> {

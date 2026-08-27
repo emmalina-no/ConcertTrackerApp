@@ -1,5 +1,5 @@
 import { Link } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
 	ActivityIndicator,
 	FlatList,
@@ -8,7 +8,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import {
+	ConcertFiltersPanel,
+	EMPTY_FILTERS,
+	matchesConcertFilters,
+	type ConcertFilters,
+} from "@/components/concert-filters";
 import { EventListItem } from "@/components/event-list-item";
+import { SearchBar } from "@/components/search-bar";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { MaxContentWidth, Spacing } from "@/constants/theme";
@@ -21,18 +28,42 @@ export default function ConcertsScreen() {
 	const theme = useTheme();
 	const [view, setView] = useState<View>("upcoming");
 	const { events, loading, error } = useEventList(view);
+	const [search, setSearch] = useState("");
+	const [filters, setFilters] = useState<ConcertFilters>(EMPTY_FILTERS);
+
+	function selectView(next: View) {
+		setView(next);
+		setSearch("");
+		setFilters(EMPTY_FILTERS);
+	}
+
+	const filteredEvents = useMemo(() => {
+		const q = search.trim().toLowerCase();
+		return events.filter((event) => {
+			if (!matchesConcertFilters(event, filters)) return false;
+			if (q.length === 0) return true;
+			const artistNames = event.event_artists.map((ea) => ea.artist.name.toLowerCase());
+			return (
+				event.name.toLowerCase().includes(q) ||
+				event.venue.name.toLowerCase().includes(q) ||
+				artistNames.some((n) => n.includes(q))
+			);
+		});
+	}, [events, filters, search]);
 
 	const emptyText =
-		view === "upcoming"
-			? "No upcoming concerts yet."
-			: "No past concerts logged yet.";
+		events.length === 0
+			? view === "upcoming"
+				? "No upcoming concerts yet."
+				: "No past concerts logged yet."
+			: "No concerts match your search or filters.";
 
 	return (
 		<ThemedView style={styles.container}>
 			<SafeAreaView style={styles.safeArea} edges={["bottom"]}>
 				<ThemedView style={styles.toggleRow}>
 					<Pressable
-						onPress={() => setView("past")}
+						onPress={() => selectView("past")}
 						style={[
 							styles.toggleButton,
 							{ backgroundColor: theme.backgroundElement },
@@ -47,7 +78,7 @@ export default function ConcertsScreen() {
 						</ThemedText>
 					</Pressable>
 					<Pressable
-						onPress={() => setView("upcoming")}
+						onPress={() => selectView("upcoming")}
 						style={[
 							styles.toggleButton,
 							{ backgroundColor: theme.backgroundElement },
@@ -63,6 +94,16 @@ export default function ConcertsScreen() {
 					</Pressable>
 				</ThemedView>
 
+				<ThemedView style={styles.searchRow}>
+					<SearchBar
+						value={search}
+						onChangeText={setSearch}
+						placeholder="Search concerts, artists, venues"
+					/>
+				</ThemedView>
+
+				<ConcertFiltersPanel events={events} filters={filters} onChange={setFilters} />
+
 				{loading ? (
 					<ActivityIndicator style={styles.loading} />
 				) : error ? (
@@ -71,7 +112,7 @@ export default function ConcertsScreen() {
 					</ThemedText>
 				) : (
 					<FlatList
-						data={events}
+						data={filteredEvents}
 						keyExtractor={(item) => item.id}
 						contentContainerStyle={styles.listContent}
 						renderItem={({ item }) => <EventListItem event={item} />}
@@ -126,6 +167,10 @@ const styles = StyleSheet.create({
 	},
 	toggleTextActive: {
 		color: "#fff",
+	},
+	searchRow: {
+		paddingHorizontal: Spacing.three,
+		paddingBottom: Spacing.two,
 	},
 	centerText: {
 		textAlign: "center",

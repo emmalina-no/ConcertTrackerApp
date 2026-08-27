@@ -1,9 +1,10 @@
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ArtistRow } from '@/components/artist-row';
+import { SearchBar } from '@/components/search-bar';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { VenueRow } from '@/components/venue-row';
@@ -20,6 +21,8 @@ export default function LibraryScreen() {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [artistSearch, setArtistSearch] = useState('');
+  const [venueSearch, setVenueSearch] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -35,6 +38,28 @@ export default function LibraryScreen() {
       load();
     }, [load])
   );
+
+  const filteredArtists = useMemo(() => {
+    const q = artistSearch.trim().toLowerCase();
+    if (!q) return artists;
+    return artists.filter((a) => a.name.toLowerCase().includes(q));
+  }, [artists, artistSearch]);
+
+  const filteredVenues = useMemo(() => {
+    const q = venueSearch.trim().toLowerCase();
+    if (!q) return venues;
+    return venues.filter(
+      (v) =>
+        v.name.toLowerCase().includes(q) ||
+        v.city.toLowerCase().includes(q) ||
+        v.country.toLowerCase().includes(q)
+    );
+  }, [venues, venueSearch]);
+
+  const emptyText =
+    (view === 'artists' ? artists.length : venues.length) === 0
+      ? `No ${view} yet.`
+      : `No ${view} match your search.`;
 
   return (
     <ThemedView style={styles.container}>
@@ -56,29 +81,37 @@ export default function LibraryScreen() {
           </Pressable>
         </ThemedView>
 
+        <ThemedView style={styles.searchRow}>
+          {view === 'artists' ? (
+            <SearchBar value={artistSearch} onChangeText={setArtistSearch} placeholder="Search artists" />
+          ) : (
+            <SearchBar value={venueSearch} onChangeText={setVenueSearch} placeholder="Search venues" />
+          )}
+        </ThemedView>
+
         {loading ? (
           <ActivityIndicator style={styles.loading} />
         ) : view === 'artists' ? (
           <FlatList
-            data={artists}
+            data={filteredArtists}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
-            renderItem={({ item }) => <ArtistRow artist={item} onChanged={load} />}
+            renderItem={({ item }) => <ArtistRow artist={item} />}
             ListEmptyComponent={
               <ThemedText type="default" themeColor="textSecondary" style={styles.emptyText}>
-                No artists yet.
+                {emptyText}
               </ThemedText>
             }
           />
         ) : (
           <FlatList
-            data={venues}
+            data={filteredVenues}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
-            renderItem={({ item }) => <VenueRow venue={item} onChanged={load} />}
+            renderItem={({ item }) => <VenueRow venue={item} />}
             ListEmptyComponent={
               <ThemedText type="default" themeColor="textSecondary" style={styles.emptyText}>
-                No venues yet.
+                {emptyText}
               </ThemedText>
             }
           />
@@ -117,6 +150,10 @@ const styles = StyleSheet.create({
   },
   toggleTextActive: {
     color: '#fff',
+  },
+  searchRow: {
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.two,
   },
   listContent: {
     padding: Spacing.three,

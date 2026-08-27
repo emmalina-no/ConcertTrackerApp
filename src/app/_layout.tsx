@@ -25,6 +25,8 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="event/[id]" options={{ title: 'Concert' }} />
         <Stack.Screen name="event/new" options={{ title: 'New concert', presentation: 'modal' }} />
+        <Stack.Screen name="artist/[id]" options={{ title: 'Artist' }} />
+        <Stack.Screen name="venue/[id]" options={{ title: 'Venue' }} />
       </Stack.Protected>
       <Stack.Protected guard={!session}>
         <Stack.Screen name="login" options={{ headerShown: false }} />
