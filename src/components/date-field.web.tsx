@@ -3,6 +3,7 @@ import { Pressable, StyleSheet } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Spacing } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTheme } from "@/hooks/use-theme";
 
 export function DateField({
@@ -20,6 +21,7 @@ export function DateField({
 	maxDate?: Date;
 }) {
 	const theme = useTheme();
+	const scheme = useColorScheme();
 
 	return (
 		<ThemedView style={styles.row}>
@@ -31,7 +33,7 @@ export function DateField({
 				max={maxDate ? maxDate.toISOString().split("T")[0] : undefined}
 				onChange={(e) => onChange(e.target.value)}
 				style={{
-					colorScheme: theme.background === "#1d1624" ? "dark" : "light",
+					colorScheme: scheme === "dark" ? "dark" : "light",
 					color: theme.text,
 					backgroundColor: theme.backgroundElement,
 					border: `1px solid ${theme.backgroundSelected}`,

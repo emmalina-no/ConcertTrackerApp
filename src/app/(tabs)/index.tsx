@@ -42,7 +42,9 @@ export default function ConcertsScreen() {
 		return events.filter((event) => {
 			if (!matchesConcertFilters(event, filters)) return false;
 			if (q.length === 0) return true;
-			const artistNames = event.event_artists.map((ea) => ea.artist.name.toLowerCase());
+			const artistNames = event.event_artists.map((ea) =>
+				ea.artist.name.toLowerCase(),
+			);
 			return (
 				event.name.toLowerCase().includes(q) ||
 				event.venue.name.toLowerCase().includes(q) ||
@@ -66,13 +68,23 @@ export default function ConcertsScreen() {
 						onPress={() => selectView("past")}
 						style={[
 							styles.toggleButton,
-							{ backgroundColor: theme.backgroundElement },
-							view === "past" && styles.toggleButtonActive,
+							{
+								backgroundColor: theme.backgroundElement,
+								borderColor: theme.backgroundSelected,
+							},
+							view === "past" && {
+								backgroundColor: theme.accent,
+								borderColor: theme.accent,
+							},
 						]}
 					>
 						<ThemedText
 							type="smallBold"
-							style={view === "past" && styles.toggleTextActive}
+							style={
+								view === "past"
+									? { color: theme.onAccent }
+									: { color: theme.textSecondary }
+							}
 						>
 							Seen
 						</ThemedText>
@@ -81,13 +93,23 @@ export default function ConcertsScreen() {
 						onPress={() => selectView("upcoming")}
 						style={[
 							styles.toggleButton,
-							{ backgroundColor: theme.backgroundElement },
-							view === "upcoming" && styles.toggleButtonActive,
+							{
+								backgroundColor: theme.backgroundElement,
+								borderColor: theme.backgroundSelected,
+							},
+							view === "upcoming" && {
+								backgroundColor: theme.accent,
+								borderColor: theme.accent,
+							},
 						]}
 					>
 						<ThemedText
 							type="smallBold"
-							style={view === "upcoming" && styles.toggleTextActive}
+							style={
+								view === "upcoming"
+									? { color: theme.onAccent }
+									: { color: theme.textSecondary }
+							}
 						>
 							Upcoming
 						</ThemedText>
@@ -102,7 +124,11 @@ export default function ConcertsScreen() {
 					/>
 				</ThemedView>
 
-				<ConcertFiltersPanel events={events} filters={filters} onChange={setFilters} />
+				<ConcertFiltersPanel
+					events={events}
+					filters={filters}
+					onChange={setFilters}
+				/>
 
 				{loading ? (
 					<ActivityIndicator style={styles.loading} />
@@ -129,8 +155,23 @@ export default function ConcertsScreen() {
 				)}
 
 				<Link href="/event/new" asChild>
-					<Pressable style={styles.fab}>
-						<ThemedText style={styles.fabText}>+</ThemedText>
+					<Pressable
+						style={StyleSheet.flatten([
+							styles.fab,
+							{
+								backgroundColor: theme.accentAlt,
+								borderColor: theme.accentWarm,
+							},
+						])}
+					>
+						<ThemedText
+							style={StyleSheet.flatten([
+								styles.fabText,
+								{ color: theme.onAccent },
+							])}
+						>
+							+
+						</ThemedText>
 					</Pressable>
 				</Link>
 			</SafeAreaView>
@@ -159,14 +200,9 @@ const styles = StyleSheet.create({
 	toggleButton: {
 		flex: 1,
 		borderRadius: Spacing.two,
+		borderWidth: 2,
 		paddingVertical: Spacing.two,
 		alignItems: "center",
-	},
-	toggleButtonActive: {
-		backgroundColor: "#3c87f7",
-	},
-	toggleTextActive: {
-		color: "#fff",
 	},
 	searchRow: {
 		paddingHorizontal: Spacing.three,
@@ -189,7 +225,7 @@ const styles = StyleSheet.create({
 		width: 56,
 		height: 56,
 		borderRadius: 28,
-		backgroundColor: "#3c87f7",
+		borderWidth: 2,
 		alignItems: "center",
 		justifyContent: "center",
 		shadowColor: "#000",
@@ -199,7 +235,6 @@ const styles = StyleSheet.create({
 		elevation: 4,
 	},
 	fabText: {
-		color: "#fff",
 		fontSize: 28,
 		lineHeight: 32,
 	},

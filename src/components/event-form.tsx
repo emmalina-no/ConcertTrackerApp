@@ -13,6 +13,7 @@ import { ThemedTextInput } from "@/components/themed-text-input";
 import { ThemedView } from "@/components/themed-view";
 import { VenuePicker } from "@/components/venue-picker";
 import { MaxContentWidth, Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 import { listArtists, listVenues } from "@/lib/api";
 import { confirm } from "@/lib/confirm";
 import type { Artist, EventFormValues, Venue } from "@/lib/types";
@@ -64,6 +65,7 @@ export function EventForm({
 	submitLabel: string;
 	onDelete?: () => Promise<void>;
 }) {
+	const theme = useTheme();
 	const [values, setValues] = useState<EventFormValues>(
 		initialValues ?? defaultValues,
 	);
@@ -251,13 +253,14 @@ export function EventForm({
 					disabled={!canSubmit || submitting}
 					style={[
 						styles.button,
+						{ backgroundColor: theme.accent, borderColor: theme.text },
 						(!canSubmit || submitting) && styles.buttonDisabled,
 					]}
 				>
 					{submitting ? (
-						<ActivityIndicator color="#fff" />
+						<ActivityIndicator color={theme.onAccent} />
 					) : (
-						<ThemedText style={styles.buttonText}>{submitLabel}</ThemedText>
+						<ThemedText style={[styles.buttonText, { color: theme.onAccent }]}>{submitLabel}</ThemedText>
 					)}
 				</Pressable>
 
@@ -305,8 +308,8 @@ const styles = StyleSheet.create({
 		alignSelf: "flex-start",
 	},
 	button: {
-		backgroundColor: "#3c87f7",
 		borderRadius: Spacing.two,
+		borderWidth: 2,
 		paddingVertical: Spacing.two + 2,
 		alignItems: "center",
 		marginTop: Spacing.two,
@@ -315,7 +318,6 @@ const styles = StyleSheet.create({
 		opacity: 0.5,
 	},
 	buttonText: {
-		color: "#fff",
 		fontWeight: "600",
 	},
 	deleteButton: {

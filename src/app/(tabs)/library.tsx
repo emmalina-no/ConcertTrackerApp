@@ -67,15 +67,23 @@ export default function LibraryScreen() {
         <ThemedView style={styles.toggleRow}>
           <Pressable
             onPress={() => setView('artists')}
-            style={[styles.toggleButton, { backgroundColor: theme.backgroundElement }, view === 'artists' && styles.toggleButtonActive]}>
-            <ThemedText type="smallBold" style={view === 'artists' && styles.toggleTextActive}>
+            style={[
+              styles.toggleButton,
+              { backgroundColor: theme.backgroundElement, borderColor: theme.backgroundSelected },
+              view === 'artists' && { backgroundColor: theme.accent, borderColor: theme.accent },
+            ]}>
+            <ThemedText type="smallBold" style={view === 'artists' ? { color: theme.onAccent } : { color: theme.textSecondary }}>
               Artists ({artists.length})
             </ThemedText>
           </Pressable>
           <Pressable
             onPress={() => setView('venues')}
-            style={[styles.toggleButton, { backgroundColor: theme.backgroundElement }, view === 'venues' && styles.toggleButtonActive]}>
-            <ThemedText type="smallBold" style={view === 'venues' && styles.toggleTextActive}>
+            style={[
+              styles.toggleButton,
+              { backgroundColor: theme.backgroundElement, borderColor: theme.backgroundSelected },
+              view === 'venues' && { backgroundColor: theme.accent, borderColor: theme.accent },
+            ]}>
+            <ThemedText type="smallBold" style={view === 'venues' ? { color: theme.onAccent } : { color: theme.textSecondary }}>
               Venues ({venues.length})
             </ThemedText>
           </Pressable>
@@ -142,14 +150,9 @@ const styles = StyleSheet.create({
   toggleButton: {
     flex: 1,
     borderRadius: Spacing.two,
+    borderWidth: 2,
     paddingVertical: Spacing.two,
     alignItems: 'center',
-  },
-  toggleButtonActive: {
-    backgroundColor: '#3c87f7',
-  },
-  toggleTextActive: {
-    color: '#fff',
   },
   searchRow: {
     paddingHorizontal: Spacing.three,

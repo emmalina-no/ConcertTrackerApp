@@ -7,13 +7,15 @@ import { useFocusEffect } from "expo-router";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { MaxContentWidth, Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 import { getStats } from "@/lib/api";
 import type { Stats } from "@/lib/types";
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
+	const theme = useTheme();
 	return (
-		<ThemedView type="backgroundElement" style={styles.statCard}>
-			<ThemedText type="title" style={styles.statValue}>
+		<ThemedView type="backgroundElement" style={[styles.statCard, { borderTopColor: theme.accent }]}>
+			<ThemedText type="title" style={[styles.statValue, { color: theme.accent }]}>
 				{value}
 			</ThemedText>
 			<ThemedText type="small" themeColor="textSecondary">
@@ -130,6 +132,7 @@ const styles = StyleSheet.create({
 	statCard: {
 		flex: 1,
 		borderRadius: Spacing.three,
+		borderTopWidth: 4,
 		padding: Spacing.three,
 		alignItems: "center",
 		gap: Spacing.one,

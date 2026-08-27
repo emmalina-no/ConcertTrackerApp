@@ -6,9 +6,11 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedTextInput } from "@/components/themed-text-input";
 import { ThemedView } from "@/components/themed-view";
 import { MaxContentWidth, Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginScreen() {
+	const theme = useTheme();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
@@ -68,12 +70,16 @@ export default function LoginScreen() {
 				<Pressable
 					onPress={() => handleAuth("signIn")}
 					disabled={disabled}
-					style={[styles.button, disabled && styles.buttonDisabled]}
+					style={[
+						styles.button,
+						{ backgroundColor: theme.accent, borderColor: theme.text },
+						disabled && styles.buttonDisabled,
+					]}
 				>
 					{loading ? (
-						<ActivityIndicator color="#fff" />
+						<ActivityIndicator color={theme.onAccent} />
 					) : (
-						<ThemedText style={styles.buttonText}>Sign in</ThemedText>
+						<ThemedText style={[styles.buttonText, { color: theme.onAccent }]}>Sign in</ThemedText>
 					)}
 				</Pressable>
 				{/*         <Pressable
@@ -104,8 +110,8 @@ const styles = StyleSheet.create({
 		marginBottom: Spacing.three,
 	},
 	button: {
-		backgroundColor: "#3c87f7",
 		borderRadius: Spacing.two,
+		borderWidth: 2,
 		paddingVertical: Spacing.two + 2,
 		alignItems: "center",
 	},
@@ -113,7 +119,6 @@ const styles = StyleSheet.create({
 		opacity: 0.5,
 	},
 	buttonText: {
-		color: "#fff",
 		fontWeight: "600",
 	},
 	secondaryButton: {
