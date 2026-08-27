@@ -7,18 +7,9 @@ export default function TabsLayout() {
 			<Tabs.Screen
 				name="index"
 				options={{
-					title: "Seen",
+					title: "Concerts",
 					tabBarIcon: ({ color, size }) => (
 						<Ionicons name="musical-notes" size={size} color={color} />
-					),
-				}}
-			/>
-			<Tabs.Screen
-				name="upcoming"
-				options={{
-					title: "Upcoming",
-					tabBarIcon: ({ color, size }) => (
-						<Ionicons name="calendar" size={size} color={color} />
 					),
 				}}
 			/>

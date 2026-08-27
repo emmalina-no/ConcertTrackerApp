@@ -24,9 +24,8 @@ src/
                           routes: signed out → login, signed in → (tabs)/event screens
     login.tsx            Email/password sign in & sign up
     (tabs)/               Bottom tab navigator
-      _layout.tsx          Tab definitions (Past, Upcoming, Stats, Library)
-      index.tsx            Past concerts list
-      upcoming.tsx          Upcoming concerts list
+      _layout.tsx          Tab definitions (Concerts, Stats, Library)
+      index.tsx            Concerts list — toggle between Upcoming and Seen
       stats.tsx             Most-seen artists, unique artist count, concerts per
                             year, busiest year, countries visited
       library.tsx           Browse/edit/delete existing artists and venues
@@ -48,8 +47,7 @@ src/
     date-field.web.tsx      Web override — plain `<input type="date">`, since
                           the native picker library has no web build. Metro
                           picks whichever file matches the target platform.
-    event-list-item.tsx    A single concert card in the Past/Upcoming lists
-    event-list-screen.tsx  Shared list+FAB layout used by both Past and Upcoming
+    event-list-item.tsx    A single concert card in the Concerts list
     themed-*.tsx            Theme-aware Text/View/TextInput wrappers — use
                           these instead of raw RN components so light/dark
                           mode always has correct contrast
