@@ -1,6 +1,4 @@
-import DateTimePicker, {
-	type DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import { Pressable, StyleSheet } from "react-native";
 
@@ -40,10 +38,9 @@ export function DateField({
 	const theme = useTheme();
 	const [showPicker, setShowPicker] = useState(false);
 
-	function handleChange(event: DateTimePickerEvent, selectedDate?: Date) {
+	function handleChange(_event: unknown, selectedDate: Date) {
 		setShowPicker(false);
-		if (event.type === "dismissed") return;
-		if (selectedDate) onChange(toISO(selectedDate));
+		onChange(toISO(selectedDate));
 	}
 
 	return (
@@ -72,7 +69,8 @@ export function DateField({
 					value={parseISO(value)}
 					mode="date"
 					display="default"
-					onChange={handleChange}
+					onValueChange={handleChange}
+					onDismiss={() => setShowPicker(false)}
 					minimumDate={minDate}
 					maximumDate={maxDate}
 				/>
