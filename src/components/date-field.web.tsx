@@ -40,7 +40,7 @@ export function DateField({
 					borderRadius: Spacing.two,
 					padding: `${Spacing.two}px ${Spacing.three}px`,
 					fontSize: 16,
-					fontFamily: "inherit",
+					fontFamily: "var(--font-display)",
 					flex: 1,
 				}}
 			/>
