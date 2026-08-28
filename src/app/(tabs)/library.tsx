@@ -14,6 +14,18 @@ import { listArtists, listVenues } from '@/lib/api';
 import type { Artist, Venue } from '@/lib/types';
 
 type View = 'artists' | 'venues';
+type Sort = 'alphabetical' | 'mostSeen';
+
+function sortByOption<T extends { name: string }>(
+  items: T[],
+  sort: Sort,
+  getCount: (item: T) => number | undefined
+): T[] {
+  if (sort === 'alphabetical') return items;
+  return [...items].sort(
+    (a, b) => (getCount(b) ?? 0) - (getCount(a) ?? 0) || a.name.localeCompare(b.name)
+  );
+}
 
 export default function LibraryScreen() {
   const theme = useTheme();
@@ -23,6 +35,8 @@ export default function LibraryScreen() {
   const [loading, setLoading] = useState(true);
   const [artistSearch, setArtistSearch] = useState('');
   const [venueSearch, setVenueSearch] = useState('');
+  const [artistSort, setArtistSort] = useState<Sort>('alphabetical');
+  const [venueSort, setVenueSort] = useState<Sort>('alphabetical');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -41,20 +55,22 @@ export default function LibraryScreen() {
 
   const filteredArtists = useMemo(() => {
     const q = artistSearch.trim().toLowerCase();
-    if (!q) return artists;
-    return artists.filter((a) => a.name.toLowerCase().includes(q));
-  }, [artists, artistSearch]);
+    const filtered = q ? artists.filter((a) => a.name.toLowerCase().includes(q)) : artists;
+    return sortByOption(filtered, artistSort, (a) => a.timesSeen);
+  }, [artists, artistSearch, artistSort]);
 
   const filteredVenues = useMemo(() => {
     const q = venueSearch.trim().toLowerCase();
-    if (!q) return venues;
-    return venues.filter(
-      (v) =>
-        v.name.toLowerCase().includes(q) ||
-        v.city.toLowerCase().includes(q) ||
-        v.country.toLowerCase().includes(q)
-    );
-  }, [venues, venueSearch]);
+    const filtered = q
+      ? venues.filter(
+          (v) =>
+            v.name.toLowerCase().includes(q) ||
+            v.city.toLowerCase().includes(q) ||
+            v.country.toLowerCase().includes(q)
+        )
+      : venues;
+    return sortByOption(filtered, venueSort, (v) => v.timesBeen);
+  }, [venues, venueSearch, venueSort]);
 
   const emptyText =
     (view === 'artists' ? artists.length : venues.length) === 0
@@ -95,6 +111,35 @@ export default function LibraryScreen() {
           ) : (
             <SearchBar value={venueSearch} onChangeText={setVenueSearch} placeholder="Search venues" />
           )}
+        </ThemedView>
+
+        <ThemedView style={styles.sortRow}>
+          {(view === 'artists'
+            ? [
+                { key: 'alphabetical' as const, label: 'Alphabetical' },
+                { key: 'mostSeen' as const, label: 'Most seen' },
+              ]
+            : [
+                { key: 'alphabetical' as const, label: 'Alphabetical' },
+                { key: 'mostSeen' as const, label: 'Most been' },
+              ]
+          ).map((option) => {
+            const active = (view === 'artists' ? artistSort : venueSort) === option.key;
+            return (
+              <Pressable
+                key={option.key}
+                onPress={() => (view === 'artists' ? setArtistSort(option.key) : setVenueSort(option.key))}
+                style={[
+                  styles.sortChip,
+                  { backgroundColor: theme.backgroundElement, borderColor: theme.backgroundSelected },
+                  active && { backgroundColor: theme.accent, borderColor: theme.accent },
+                ]}>
+                <ThemedText type="small" style={active ? { color: theme.onAccent } : { color: theme.textSecondary }}>
+                  {option.label}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
         </ThemedView>
 
         {loading ? (
@@ -157,6 +202,18 @@ const styles = StyleSheet.create({
   searchRow: {
     paddingHorizontal: Spacing.three,
     paddingBottom: Spacing.two,
+  },
+  sortRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.two,
+  },
+  sortChip: {
+    borderRadius: Spacing.two,
+    borderWidth: 2,
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.three,
   },
   listContent: {
     padding: Spacing.three,
