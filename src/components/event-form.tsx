@@ -257,7 +257,10 @@ export function EventForm({
 					disabled={!canSubmit || submitting}
 					style={[
 						styles.button,
-						{ backgroundColor: theme.accent, borderColor: theme.text },
+						{
+							backgroundColor: theme.accent,
+							borderColor: theme.backgroundSelected,
+						},
 						(!canSubmit || submitting) && styles.buttonDisabled,
 					]}
 				>
@@ -305,7 +308,7 @@ const styles = StyleSheet.create({
 	artistRow: {
 		borderRadius: Spacing.two,
 		borderWidth: 1,
-		padding: Spacing.two,
+		padding: Spacing.half,
 		gap: Spacing.one,
 	},
 	removeButton: {
