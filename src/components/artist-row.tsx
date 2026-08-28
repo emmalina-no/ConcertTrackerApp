@@ -17,9 +17,9 @@ export function ArtistRow({ artist }: { artist: Artist }) {
 			<Pressable>
 				<ThemedView
 					type="backgroundElement"
-					style={[styles.row, { borderColor: theme.accentWarm }]}
+					style={[styles.row, { borderColor: theme.accent }]}
 				>
-					<ThemedText type="default" style={{ color: theme.accentAlt }}>
+					<ThemedText type="default" style={{ color: theme.accentWarm }}>
 						{artist.name}
 					</ThemedText>
 					{artist.timesSeen != null && (

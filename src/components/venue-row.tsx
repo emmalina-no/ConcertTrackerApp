@@ -14,9 +14,9 @@ export function VenueRow({ venue }: { venue: Venue }) {
 			<Pressable>
 				<ThemedView
 					type="backgroundElement"
-					style={[styles.row, { borderColor: theme.accentAlt }]}
+					style={[styles.row, { borderColor: theme.accent }]}
 				>
-					<ThemedText type="default" style={{ color: theme.accentWarm }}>
+					<ThemedText type="default" style={{ color: theme.accentAlt }}>
 						{venue.name}
 					</ThemedText>
 					<ThemedText type="small" themeColor="textSecondary">
