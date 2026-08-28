@@ -213,8 +213,12 @@ export function EventForm({
 				{values.artists.map((artist, index) => (
 					<ThemedView
 						key={index}
-						type="backgroundElement"
-						style={styles.artistRow}
+						style={[
+							styles.artistRow,
+							{
+								borderColor: theme.backgroundSelected,
+							},
+						]}
 					>
 						<ArtistPicker
 							artists={artists}
@@ -260,7 +264,9 @@ export function EventForm({
 					{submitting ? (
 						<ActivityIndicator color={theme.onAccent} />
 					) : (
-						<ThemedText style={[styles.buttonText, { color: theme.onAccent }]}>{submitLabel}</ThemedText>
+						<ThemedText style={[styles.buttonText, { color: theme.onAccent }]}>
+							{submitLabel}
+						</ThemedText>
 					)}
 				</Pressable>
 
@@ -298,6 +304,7 @@ const styles = StyleSheet.create({
 	},
 	artistRow: {
 		borderRadius: Spacing.two,
+		borderWidth: 1,
 		padding: Spacing.two,
 		gap: Spacing.one,
 	},
