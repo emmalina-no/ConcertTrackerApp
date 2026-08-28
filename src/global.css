@@ -1,4 +1,16 @@
 :root {
+	--color-background-element: #f7eedd;
+	--color-accent: #8b2fc9;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-background-element: #382753;
+		--color-accent: #c77dff;
+	}
+}
+
+:root {
 	--font-display:
 		Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji,
 		Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
@@ -12,4 +24,14 @@
 * {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	scrollbar-color: var(--color-accent) var(--color-background-element);
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: var(--color-accent);
+	border-radius: 999px;
+}
+
+*::-webkit-scrollbar-track {
+	background-color: var(--color-background-element);
 }
