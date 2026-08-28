@@ -68,21 +68,35 @@ async function findOrCreateArtist(
 }
 
 export async function listVenues(): Promise<Venue[]> {
+	const today = todayISO();
 	const { data, error } = await supabase
 		.from("venues")
-		.select("*")
+		.select("*, events(count)")
+		.lt("events.end_date", today)
 		.order("name");
 	if (error) throw error;
-	return data;
+	return (
+		data as unknown as (Venue & { events: { count: number }[] })[]
+	).map(({ events, ...venue }) => ({
+		...venue,
+		timesBeen: events[0]?.count ?? 0,
+	}));
 }
 
 export async function listArtists(): Promise<Artist[]> {
+	const today = todayISO();
 	const { data, error } = await supabase
 		.from("artists")
-		.select("*")
+		.select("*, event_artists(count)")
+		.lt("event_artists.played_date", today)
 		.order("name");
 	if (error) throw error;
-	return data;
+	return (
+		data as unknown as (Artist & { event_artists: { count: number }[] })[]
+	).map(({ event_artists, ...artist }) => ({
+		...artist,
+		timesSeen: event_artists[0]?.count ?? 0,
+	}));
 }
 
 export async function getArtist(id: string): Promise<Artist> {

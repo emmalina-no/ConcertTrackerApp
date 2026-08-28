@@ -22,6 +22,11 @@ export function ArtistRow({ artist }: { artist: Artist }) {
 					<ThemedText type="default" style={{ color: theme.accentAlt }}>
 						{artist.name}
 					</ThemedText>
+					{artist.timesSeen != null && (
+						<ThemedText type="small" themeColor="textSecondary">
+							Times seen: {artist.timesSeen}
+						</ThemedText>
+					)}
 				</ThemedView>
 			</Pressable>
 		</Link>

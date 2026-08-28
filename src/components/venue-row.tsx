@@ -22,6 +22,11 @@ export function VenueRow({ venue }: { venue: Venue }) {
 					<ThemedText type="small" themeColor="textSecondary">
 						{venue.city}, {venue.country}
 					</ThemedText>
+					{venue.timesBeen != null && (
+						<ThemedText type="small" themeColor="textSecondary">
+							Times been: {venue.timesBeen}
+						</ThemedText>
+					)}
 				</ThemedView>
 			</Pressable>
 		</Link>

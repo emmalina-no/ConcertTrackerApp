@@ -3,11 +3,13 @@ export type Venue = {
   name: string;
   city: string;
   country: string;
+  timesBeen?: number;
 };
 
 export type Artist = {
   id: string;
   name: string;
+  timesSeen?: number;
 };
 
 export type EventArtist = {
