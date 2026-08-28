@@ -1,0 +1,655 @@
+<title>Concert Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #fff9eb;
+    --surface: #F7EEDD;
+    --surface-2: #EEDFC0;
+    --ink: #241934;
+    --ink-soft: #7A6E58;
+    --accent: #8B2FC9;
+    --accent-teal: #0E8C8C;
+    --accent-warm: #E8590C;
+    --on-accent: #FFFFFF;
+    --line: rgba(36, 25, 52, 0.14);
+    --shadow: rgba(36, 25, 52, 0.10);
+
+    --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+    --body: "Karla", "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", "Consolas", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1d132d;
+      --surface: #382753;
+      --surface-2: #4A3568;
+      --ink: #F5EFFF;
+      --ink-soft: #C2AEDD;
+      --accent: #C77DFF;
+      --accent-teal: #2DD4BF;
+      --accent-warm: #FDBA5C;
+      --on-accent: #241a35;
+      --line: rgba(245, 239, 255, 0.14);
+      --shadow: rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #1d132d;
+    --surface: #382753;
+    --surface-2: #4A3568;
+    --ink: #F5EFFF;
+    --ink-soft: #C2AEDD;
+    --accent: #C77DFF;
+    --accent-teal: #2DD4BF;
+    --accent-warm: #FDBA5C;
+    --on-accent: #241a35;
+    --line: rgba(245, 239, 255, 0.14);
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 28px 120px;
+  }
+
+  /* ---------- Marquee header ---------- */
+
+  .marquee {
+    position: relative;
+    padding: 72px 28px 56px;
+    border-bottom: 3px solid var(--ink);
+    overflow: hidden;
+  }
+
+  .marquee::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--accent) 0 2px,
+      transparent 2px 14px
+    );
+    opacity: 0.10;
+    pointer-events: none;
+  }
+
+  .marquee-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-teal);
+    margin: 0 0 18px;
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-teal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-teal) 25%, transparent);
+  }
+
+  h1.title {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(48px, 9vw, 92px);
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    margin: 0;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+
+  h1.title em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .subhead {
+    max-width: 58ch;
+    margin: 22px 0 0;
+    font-size: 18px;
+    color: var(--ink-soft);
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 28px;
+    margin-top: 32px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .meta-row strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ---------- Stack strip ---------- */
+
+  .stack-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 28px 0 0;
+  }
+
+  .pill {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .pill.on {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-color: transparent;
+    font-weight: 500;
+  }
+
+  /* ---------- Program / setlist ---------- */
+
+  .program {
+    position: relative;
+    margin-top: 76px;
+  }
+
+  .program::before {
+    content: "";
+    position: absolute;
+    left: 46px;
+    top: 12px;
+    bottom: 12px;
+    width: 2px;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--line) 0 6px,
+      transparent 6px 12px
+    );
+  }
+
+  @media (max-width: 640px) {
+    .program::before { left: 22px; }
+  }
+
+  .track {
+    position: relative;
+    padding: 0 0 76px 100px;
+  }
+
+  @media (max-width: 640px) {
+    .track { padding-left: 56px; }
+  }
+
+  .track:last-child { padding-bottom: 8px; }
+
+  .track-num {
+    position: absolute;
+    left: 0;
+    top: -6px;
+    width: 92px;
+    text-align: right;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 46px;
+    color: var(--surface-2);
+    line-height: 1;
+    user-select: none;
+  }
+
+  @media (max-width: 640px) {
+    .track-num { width: 48px; font-size: 32px; }
+  }
+
+  .track-dot {
+    position: absolute;
+    left: 43px;
+    top: 8px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 3px solid var(--accent);
+  }
+
+  @media (max-width: 640px) {
+    .track-dot { left: 19px; }
+  }
+
+  .track h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(26px, 4vw, 34px);
+    text-transform: uppercase;
+    letter-spacing: 0.005em;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+
+  .track .kicker {
+    display: block;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-warm);
+    margin-bottom: 10px;
+  }
+
+  .track p {
+    max-width: 62ch;
+    margin: 0 0 14px;
+    color: var(--ink);
+  }
+
+  .track p.soft { color: var(--ink-soft); }
+
+  code, .file {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-top: 16px;
+    box-shadow: 0 6px 18px -12px var(--shadow);
+  }
+
+  .card + .card { margin-top: 12px; }
+
+  .card h3 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-teal);
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 560px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  ul.list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+
+  ul.list li {
+    padding-left: 20px;
+    position: relative;
+  }
+
+  ul.list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 7px;
+    height: 7px;
+    background: var(--accent);
+    transform: rotate(45deg);
+  }
+
+  /* ---------- Diagram ---------- */
+
+  .diagram {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  .box {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 12px 16px;
+    min-width: 150px;
+  }
+
+  .box strong {
+    display: block;
+    font-family: var(--body);
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .box.accent { border-color: var(--accent); }
+  .box.teal { border-color: var(--accent-teal); }
+
+  .arrow {
+    color: var(--ink-soft);
+    font-size: 20px;
+  }
+
+  .stack-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ---------- Screens table ---------- */
+
+  .screens {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-size: 14.5px;
+  }
+
+  .screens th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 0 10px 8px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .screens td {
+    padding: 10px 10px 10px 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  .screens tr:last-child td { border-bottom: none; }
+
+  /* ---------- Footer ---------- */
+
+  .outro {
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 3px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .outro .stamp {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 22px;
+    text-transform: uppercase;
+  }
+
+  .outro .stamp span { color: var(--accent); }
+
+  .outro .note {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    max-width: 40ch;
+  }
+</style>
+
+<header class="marquee">
+  <div class="marquee-inner">
+    <p class="eyebrow">Backstage tour · how it's built</p>
+    <h1 class="title">Concert<br><em>Tracker</em></h1>
+    <p class="subhead">
+      A personal gig log for iOS, Android and web — every concert, venue and
+      artist in one place, with year-by-year stats on the side.
+    </p>
+    <div class="meta-row">
+      <span><strong>Runtime</strong> Expo (React Native + Web)</span>
+      <span><strong>Language</strong> TypeScript</span>
+      <span><strong>Backend</strong> Supabase</span>
+    </div>
+    <div class="stack-strip">
+      <span class="pill on">Expo Router</span>
+      <span class="pill">React Native 0.86</span>
+      <span class="pill">React 19</span>
+      <span class="pill">Supabase (Postgres + Auth)</span>
+      <span class="pill">AsyncStorage</span>
+      <span class="pill">react-native-web</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="program">
+
+    <section class="track">
+      <span class="track-num">01</span>
+      <span class="track-dot"></span>
+      <span class="kicker">Foundation</span>
+      <h2>One codebase, three stages</h2>
+      <p>
+        The app is a single Expo project that ships to iOS, Android and the
+        web from the same TypeScript source. <span class="file">expo-router</span>
+        turns the file tree under <span class="file">src/app</span> directly
+        into the navigation tree — a screen is a file, not a route config.
+      </p>
+      <div class="diagram">
+        <div class="box"><strong>src/app/(tabs)</strong>Concerts · Stats · Library</div>
+        <span class="arrow">＋</span>
+        <div class="box"><strong>src/app/*</strong>event, artist, venue stack screens</div>
+        <span class="arrow">→</span>
+        <div class="box accent"><strong>expo-router</strong>file → route</div>
+      </div>
+      <p class="soft">
+        Where a screen needs different DOM behaviour, a
+        <span class="file">.web.tsx</span> sibling file wins on web while the
+        default file keeps serving native — used for the date picker (see
+        track 07).
+      </p>
+    </section>
+
+    <section class="track">
+      <span class="track-num">02</span>
+      <span class="track-dot"></span>
+      <span class="kicker">Data &amp; backend</span>
+      <h2>Supabase behind one gateway</h2>
+      <p>
+        There's no custom server. <span class="file">Supabase</span> supplies
+        Postgres, auth and row-level access straight from the client. Every
+        query the app makes goes through a single file —
+        <span class="file">src/lib/api.ts</span> — so screens never talk to
+        Supabase directly.
+      </p>
+      <div class="card">
+        <h3>Schema, in four tables</h3>
+        <div class="diagram">
+          <div class="stack-col">
+            <div class="box teal"><strong>events</strong>name, dates, notes</div>
+            <div class="box teal"><strong>venues</strong>name, city, country</div>
+          </div>
+          <span class="arrow">⋈</span>
+          <div class="stack-col">
+            <div class="box teal"><strong>event_artists</strong>join · played_date</div>
+            <div class="box teal"><strong>artists</strong>name</div>
+          </div>
+        </div>
+      </div>
+      <p class="soft">
+        Creating a concert looks up or inserts its venue and artists on the
+        fly (<span class="file">findOrCreateVenue</span>,
+        <span class="file">findOrCreateArtist</span>), then rewrites the
+        <span class="file">event_artists</span> lineup for that event.
+      </p>
+    </section>
+
+    <section class="track">
+      <span class="track-num">03</span>
+      <span class="track-dot"></span>
+      <span class="kicker">Session</span>
+      <h2>Auth guards the whole tree</h2>
+      <p>
+        <span class="file">AuthProvider</span> wraps the app in a context
+        that mirrors Supabase's session — persisted to
+        <span class="file">AsyncStorage</span> so a refresh doesn't sign you
+        out. The root layout reads it once and splits the entire route tree
+        with <span class="file">Stack.Protected</span>.
+      </p>
+      <div class="card">
+        <h3>Root layout, in effect</h3>
+        <ul class="list">
+          <li>Signed in → tabs, event / artist / venue screens</li>
+          <li>Signed out → <span class="file">login</span> only</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="track">
+      <span class="track-num">04</span>
+      <span class="track-dot"></span>
+      <span class="kicker">Navigation</span>
+      <h2>Tabs for browsing, a stack for detail</h2>
+      <p>
+        Three tabs cover the everyday views; drilling into a concert, artist
+        or venue pushes a stack screen on top, each with its own header.
+      </p>
+      <table class="screens">
+        <tr><th>Screen</th><th>File</th><th>Role</th></tr>
+        <tr><td>Concerts</td><td><span class="file">(tabs)/index.tsx</span></td><td>Past &amp; upcoming list, filters</td></tr>
+        <tr><td>Stats</td><td><span class="file">(tabs)/stats.tsx</span></td><td>Per-year chart, top artists, countries</td></tr>
+        <tr><td>Library</td><td><span class="file">(tabs)/library.tsx</span></td><td>All artists &amp; venues</td></tr>
+        <tr><td>Concert detail</td><td><span class="file">event/[id].tsx</span></td><td>Edit / delete a logged show</td></tr>
+        <tr><td>New concert</td><td><span class="file">event/new.tsx</span></td><td>Modal form</td></tr>
+        <tr><td>Artist / Venue</td><td><span class="file">artist/[id]</span>, <span class="file">venue/[id]</span></td><td>Profile + its concert history</td></tr>
+      </table>
+      <p class="soft">
+        Refreshing a detail screen (or opening it from a link) leaves no
+        history to go "back" to — a custom
+        <span class="file">HeaderBackButton</span> checks
+        <span class="file">router.canGoBack()</span> and falls back to
+        Library or Concerts instead of vanishing.
+      </p>
+    </section>
+
+    <section class="track">
+      <span class="track-num">05</span>
+      <span class="track-dot"></span>
+      <span class="kicker">Design system</span>
+      <h2>Themed primitives, not scattered colors</h2>
+      <p>
+        A single palette in <span class="file">constants/theme.ts</span>
+        defines light and dark values for text, backgrounds and three accent
+        colors. <span class="file">useTheme()</span> reads the device scheme
+        and hands components their colors — the same tokens power this page.
+      </p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>ThemedView / ThemedText</h3>
+          <p class="soft" style="margin:0">
+            Drop-in <span class="file">View</span> / <span class="file">Text</span>
+            replacements that pull background and color straight from the
+            active theme.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Navigation chrome</h3>
+          <p class="soft" style="margin:0">
+            Header background, tint and border are mapped from the same
+            palette, so stack headers match the app instead of React
+            Navigation's defaults.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="track">
+      <span class="track-num">06</span>
+      <span class="track-dot"></span>
+      <span class="kicker">Insights</span>
+      <h2>Stats computed on the device</h2>
+      <p>
+        <span class="file">getStats()</span> pulls every past concert once
+        and reduces it client-side — no aggregate SQL — into per-year
+        counts, a ranked artist list and a set of countries visited, which
+        the Stats tab renders as a bar chart, a top-5 list and pills.
+      </p>
+    </section>
+
+    <section class="track">
+      <span class="track-num">07</span>
+      <span class="track-dot"></span>
+      <span class="kicker">Platform seams</span>
+      <h2>Where native and web diverge</h2>
+      <p>
+        Most of the app is one implementation for every platform. Dates are
+        the exception: native uses
+        <span class="file">@react-native-community/datetimepicker</span>,
+        while <span class="file">date-field.web.tsx</span> drives a real
+        <span class="file">&lt;input type="date"&gt;</span> under a
+        theme-matched overlay, so it opens on click and always reads
+        <span class="file">dd/mm/yyyy</span> regardless of browser locale.
+      </p>
+    </section>
+
+  </div>
+
+  <div class="outro">
+    <div class="stamp">That's a <span>wrap</span>.</div>
+    <p class="note">Built with Expo Router, Supabase and a palette borrowed straight from the app itself.</p>
+  </div>
+</main>
