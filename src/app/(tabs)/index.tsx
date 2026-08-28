@@ -22,11 +22,11 @@ import { MaxContentWidth, Spacing } from "@/constants/theme";
 import { useEventList } from "@/hooks/use-event-list";
 import { useTheme } from "@/hooks/use-theme";
 
-type View = "upcoming" | "past";
+type View = "past" | "upcoming";
 
 export default function ConcertsScreen() {
 	const theme = useTheme();
-	const [view, setView] = useState<View>("upcoming");
+	const [view, setView] = useState<View>("past");
 	const { events, loading, error } = useEventList(view);
 	const [search, setSearch] = useState("");
 	const [filters, setFilters] = useState<ConcertFilters>(EMPTY_FILTERS);
@@ -86,7 +86,7 @@ export default function ConcertsScreen() {
 									: { color: theme.textSecondary }
 							}
 						>
-							Seen
+							Past
 						</ThemedText>
 					</Pressable>
 					<Pressable
