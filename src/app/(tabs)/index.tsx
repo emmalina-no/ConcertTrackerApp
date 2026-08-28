@@ -4,6 +4,7 @@ import {
 	ActivityIndicator,
 	FlatList,
 	Pressable,
+	View as RNView,
 	StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -164,14 +165,22 @@ export default function ConcertsScreen() {
 							},
 						])}
 					>
-						<ThemedText
-							style={StyleSheet.flatten([
-								styles.fabText,
-								{ color: theme.onAccent },
-							])}
-						>
-							+
-						</ThemedText>
+						<RNView style={styles.fabIcon}>
+							<RNView
+								style={[
+									styles.fabIconBar,
+									styles.fabIconH,
+									{ backgroundColor: theme.backgroundElement },
+								]}
+							/>
+							<RNView
+								style={[
+									styles.fabIconBar,
+									styles.fabIconV,
+									{ backgroundColor: theme.backgroundElement },
+								]}
+							/>
+						</RNView>
 					</Pressable>
 				</Link>
 			</SafeAreaView>
@@ -234,8 +243,22 @@ const styles = StyleSheet.create({
 		shadowOffset: { width: 0, height: 2 },
 		elevation: 4,
 	},
-	fabText: {
-		fontSize: 28,
-		lineHeight: 32,
+	fabIcon: {
+		width: 22,
+		height: 22,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	fabIconBar: {
+		position: "absolute",
+		borderRadius: 1.5,
+	},
+	fabIconH: {
+		width: 22,
+		height: 3,
+	},
+	fabIconV: {
+		width: 3,
+		height: 22,
 	},
 });
