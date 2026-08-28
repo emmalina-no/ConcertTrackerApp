@@ -12,6 +12,7 @@ import { getStats } from "@/lib/api";
 import type { Stats, YearStat } from "@/lib/types";
 
 const TOP_ARTISTS_LIMIT = 5;
+const CHART_COLUMN_WIDTH = 44;
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
 	const theme = useTheme();
@@ -38,7 +39,11 @@ function ConcertsByYearChart({ data }: { data: YearStat[] }) {
 	const maxCount = Math.max(...data.map((d) => d.concertCount), 1);
 
 	return (
-		<View style={styles.chart}>
+		<ScrollView
+			horizontal
+			showsHorizontalScrollIndicator={true}
+			contentContainerStyle={styles.chart}
+		>
 			{data.map((yearStat) => (
 				<View key={yearStat.year} style={styles.chartColumn}>
 					<ThemedText type="small" style={{ color: theme.accent }}>
@@ -65,7 +70,7 @@ function ConcertsByYearChart({ data }: { data: YearStat[] }) {
 					</ThemedText>
 				</View>
 			))}
-		</View>
+		</ScrollView>
 	);
 }
 
@@ -242,9 +247,10 @@ const styles = StyleSheet.create({
 		gap: Spacing.two,
 		height: 160,
 		paddingTop: Spacing.two,
+		flexGrow: 1,
 	},
 	chartColumn: {
-		flex: 1,
+		width: CHART_COLUMN_WIDTH,
 		alignItems: "center",
 		gap: Spacing.one,
 		height: "100%",
