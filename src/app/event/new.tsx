@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 
-import { EventForm } from '@/components/event-form';
+import { EventForm } from '@/components/feature/event-form';
 import { createEvent } from '@/lib/api';
 import type { EventFormValues } from '@/lib/types';
 

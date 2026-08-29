@@ -1,128 +1,87 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
 
-import { ThemedText } from "@/components/themed-text";
-import { ThemedTextInput } from "@/components/themed-text-input";
-import { ThemedView } from "@/components/themed-view";
-import { MaxContentWidth, Spacing } from "@/constants/theme";
-import { useTheme } from "@/hooks/use-theme";
+import { Button } from "@/components/ui/button";
+import { Screen } from "@/components/ui/screen";
+import { TextField } from "@/components/ui/text-field";
+import { ThemedText } from "@/components/ui/themed-text";
+import { ThemedView } from "@/components/ui/themed-view";
+import { Spacing } from "@/constants/theme";
 import { supabase } from "@/lib/supabase";
+import { filled } from "@/lib/validation";
 
 export default function LoginScreen() {
-	const theme = useTheme();
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [message, setMessage] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-	async function handleAuth(mode: "signIn" | "signUp") {
-		setError(null);
-		setMessage(null);
-		setLoading(true);
-		const credentials = { email: email.trim(), password };
-		const { data, error: authError } =
-			mode === "signIn"
-				? await supabase.auth.signInWithPassword(credentials)
-				: await supabase.auth.signUp(credentials);
-		setLoading(false);
-		if (authError) {
-			setError(authError.message);
-			return;
-		}
-		if (mode === "signUp" && !data.session) {
-			setMessage(
-				"Account created. Check your email to confirm it before signing in.",
-			);
-		}
-	}
+  async function handleAuth(mode: "signIn" | "signUp") {
+    setError(null);
+    setMessage(null);
+    setLoading(true);
+    const credentials = { email: email.trim(), password };
+    const { data, error: authError } =
+      mode === "signIn"
+        ? await supabase.auth.signInWithPassword(credentials)
+        : await supabase.auth.signUp(credentials);
+    setLoading(false);
+    if (authError) {
+      setError(authError.message);
+      return;
+    }
+    if (mode === "signUp" && !data.session) {
+      setMessage(
+        "Account created. Check your email to confirm it before signing in.",
+      );
+    }
+  }
 
-	const disabled =
-		loading || email.trim().length === 0 || password.length === 0;
+  const canSubmit = !loading && filled(email, password);
 
-	return (
-		<ThemedView style={styles.container}>
-			<SafeAreaView style={styles.safeArea}>
-				<ThemedText type="title" style={styles.title}>
-					Concert Tracker
-				</ThemedText>
+  return (
+    <Screen center edges={["top", "bottom"]}>
+      <ThemedView style={styles.form}>
+        <ThemedText type="title" style={styles.title}>
+          Concert Tracker
+        </ThemedText>
 
-				<ThemedTextInput
-					value={email}
-					onChangeText={setEmail}
-					placeholder="you@example.com"
-					autoCapitalize="none"
-					keyboardType="email-address"
-				/>
-				<ThemedTextInput
-					value={password}
-					onChangeText={setPassword}
-					placeholder="Password"
-					secureTextEntry
-				/>
-				{error && (
-					<ThemedText type="small" themeColor="textSecondary">
-						{error}
-					</ThemedText>
-				)}
-				{message && <ThemedText type="small">{message}</ThemedText>}
-				<Pressable
-					onPress={() => handleAuth("signIn")}
-					disabled={disabled}
-					style={[
-						styles.button,
-						{ backgroundColor: theme.accent, borderColor: theme.text },
-						disabled && styles.buttonDisabled,
-					]}
-				>
-					{loading ? (
-						<ActivityIndicator color={theme.onAccent} />
-					) : (
-						<ThemedText style={[styles.buttonText, { color: theme.onAccent }]}>Sign in</ThemedText>
-					)}
-				</Pressable>
-				{/*         <Pressable
-          onPress={() => handleAuth('signUp')}
-          disabled={disabled}
-          style={[styles.secondaryButton, disabled && styles.buttonDisabled]}>
-          <ThemedText type="link">First time here? Create account</ThemedText>
-        </Pressable> */}
-			</SafeAreaView>
-		</ThemedView>
-	);
+        <TextField
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="you@example.com"
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+        <TextField
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Password"
+          secureTextEntry
+        />
+        {error && <ThemedText type="destructive">{error}</ThemedText>}
+        {message && <ThemedText type="small">{message}</ThemedText>}
+        <Button
+          label="Sign in"
+          onPress={() => handleAuth("signIn")}
+          disabled={!canSubmit}
+          loading={loading}
+        />
+      </ThemedView>
+    </Screen>
+  );
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	safeArea: {
-		width: "100%",
-		maxWidth: MaxContentWidth,
-		paddingHorizontal: Spacing.four,
-		gap: Spacing.three,
-	},
-	title: {
-		textAlign: "center",
-		marginBottom: Spacing.three,
-	},
-	button: {
-		borderRadius: Spacing.two,
-		borderWidth: 2,
-		paddingVertical: Spacing.two + 2,
-		alignItems: "center",
-	},
-	buttonDisabled: {
-		opacity: 0.5,
-	},
-	buttonText: {
-		fontWeight: "600",
-	},
-	secondaryButton: {
-		alignItems: "center",
-		paddingVertical: Spacing.two,
-	},
+  form: {
+    paddingHorizontal: Spacing.four,
+    gap: Spacing.three,
+  },
+  title: {
+    textAlign: "center",
+    marginBottom: Spacing.three,
+  },
 });

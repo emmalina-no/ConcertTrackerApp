@@ -1,20 +1,20 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet } from "react-native";
 
-import { ArtistPicker } from "@/components/artist-picker";
-import { Button } from "@/components/button";
-import { DateField } from "@/components/date-field";
-import { StarRating } from "@/components/star-rating";
-import { ThemedText } from "@/components/themed-text";
-import { ThemedTextInput } from "@/components/themed-text-input";
-import { ThemedView } from "@/components/themed-view";
-import { VenuePicker } from "@/components/venue-picker";
+import { ArtistFields } from "@/components/feature/artist-fields";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DateField } from "@/components/ui/date-field";
+import { FormField } from "@/components/ui/form-field";
+import { TextField } from "@/components/ui/text-field";
+import { ThemedText } from "@/components/ui/themed-text";
+import { ThemedView } from "@/components/ui/themed-view";
+import { VenuePicker } from "@/components/feature/venue-picker";
 import { MaxContentWidth, Spacing } from "@/constants/theme";
-import { useTheme } from "@/hooks/use-theme";
 import { listArtists, listVenues } from "@/lib/api";
 import { confirm } from "@/lib/confirm";
 import type { Artist, EventFormValues, Venue } from "@/lib/types";
+import { filled } from "@/lib/validation";
 
 const emptyArtist = () => ({ name: "", playedDate: "", rating: null });
 
@@ -29,56 +29,6 @@ const defaultValues: EventFormValues = {
   artists: [emptyArtist()],
 };
 
-function Checkbox({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}) {
-  const theme = useTheme();
-  return (
-    <Pressable
-      onPress={() => onChange(!checked)}
-      style={styles.checkboxRow}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked }}
-    >
-      <Ionicons
-        name={checked ? "checkbox" : "square-outline"}
-        size={22}
-        color={checked ? theme.accent : theme.textSecondary}
-      />
-      <ThemedText type="smallBold">{label}</ThemedText>
-    </Pressable>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <ThemedView style={styles.field}>
-      <ThemedText type="smallBold">{label}</ThemedText>
-      <ThemedTextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-      />
-    </ThemedView>
-  );
-}
-
 export function EventForm({
   initialValues,
   onSubmit,
@@ -90,7 +40,6 @@ export function EventForm({
   submitLabel: string;
   onDelete?: () => Promise<void>;
 }) {
-  const theme = useTheme();
   const [values, setValues] = useState<EventFormValues>(
     initialValues ?? defaultValues,
   );
@@ -192,47 +141,41 @@ export function EventForm({
     if (confirmed) removeArtist(index);
   }
 
-  const canSubmit =
-    values.name.trim().length > 0 &&
-    values.startDate.trim().length > 0 &&
-    values.venueName.trim().length > 0;
+  const canSubmit = filled(values.name, values.startDate, values.venueName);
+  const startDate = values.startDate ? new Date(values.startDate) : undefined;
+  const endDate = values.endDate ? new Date(values.endDate) : undefined;
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <ThemedView style={styles.form}>
-        <Field
+        <TextField
           label="Event name"
           value={values.name}
           onChangeText={(name) => setValues((p) => ({ ...p, name }))}
           placeholder="Tons of Rock"
         />
-        <ThemedView style={styles.field}>
-          <ThemedText type="smallBold">Start date</ThemedText>
+        <FormField label="Start date">
           <DateField
             value={values.startDate}
             onChange={(startDate) => setValues((p) => ({ ...p, startDate }))}
           />
-        </ThemedView>
+        </FormField>
         <Checkbox
           label="Multi-day concert"
           checked={multiDay}
           onChange={setMultiDay}
         />
         {multiDay && (
-          <ThemedView style={styles.field}>
-            <ThemedText type="smallBold">End date</ThemedText>
+          <FormField label="End date">
             <DateField
               value={values.endDate}
               onChange={(endDate) => setValues((p) => ({ ...p, endDate }))}
-              minDate={
-                values.startDate ? new Date(values.startDate) : undefined
-              }
+              minDate={startDate}
               clearable
             />
-          </ThemedView>
+          </FormField>
         )}
-        <ThemedView style={styles.field}>
-          <ThemedText type="smallBold">Venue</ThemedText>
+        <FormField label="Venue">
           <VenuePicker
             venues={venues}
             value={{
@@ -249,8 +192,8 @@ export function EventForm({
               }))
             }
           />
-        </ThemedView>
-        <Field
+        </FormField>
+        <TextField
           label="Notes"
           value={values.notes}
           onChangeText={(notes) => setValues((p) => ({ ...p, notes }))}
@@ -261,48 +204,16 @@ export function EventForm({
           Artists
         </ThemedText>
         {values.artists.map((artist, index) => (
-          <ThemedView
+          <ArtistFields
             key={index}
-            style={[
-              styles.artistRow,
-              {
-                borderColor: theme.backgroundSelected,
-              },
-            ]}
-          >
-            <ArtistPicker
-              artists={artists}
-              value={artist.name}
-              onChange={(name) => updateArtist(index, { name })}
-            />
-            {multiDay && (
-              <DateField
-                value={artist.playedDate}
-                onChange={(playedDate) => updateArtist(index, { playedDate })}
-                placeholder="Played date"
-                minDate={
-                  values.startDate ? new Date(values.startDate) : undefined
-                }
-                maxDate={values.endDate ? new Date(values.endDate) : undefined}
-              />
-            )}
-            <View style={styles.ratingRow}>
-              <ThemedText type="smallBold">Rating</ThemedText>
-              <StarRating
-                value={artist.rating}
-                onChange={(rating) => updateArtist(index, { rating })}
-              />
-            </View>
-            <Button
-              icon="trash-outline"
-              variant="destructive"
-              size="sm"
-              onPress={() => handleRemoveArtist(index)}
-              accessibilityLabel="Remove artist"
-              noBorder={true}
-              style={styles.removeButton}
-            />
-          </ThemedView>
+            artist={artist}
+            artists={artists}
+            multiDay={multiDay}
+            minDate={startDate}
+            maxDate={endDate}
+            onChange={(patch) => updateArtist(index, patch)}
+            onRemove={() => handleRemoveArtist(index)}
+          />
         ))}
         <Pressable onPress={addArtist} style={styles.addArtistButton}>
           <ThemedText type="linkPrimary">+ Add artist</ThemedText>
@@ -345,28 +256,8 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     gap: Spacing.three,
   },
-  field: {
-    gap: Spacing.one,
-  },
-  checkboxRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.two,
-  },
   sectionTitle: {
     marginTop: Spacing.two,
-  },
-  artistRow: {
-    //borderRadius: Spacing.two,
-    borderBottomWidth: 1,
-    padding: Spacing.half,
-    gap: Spacing.one,
-  },
-  ratingRow: {
-    gap: Spacing.one,
-  },
-  removeButton: {
-    alignSelf: "flex-end",
   },
   addArtistButton: {
     alignSelf: "flex-start",

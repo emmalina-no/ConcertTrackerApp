@@ -6,6 +6,13 @@ export type Venue = {
   timesBeen?: number;
 };
 
+/** A venue's editable fields, without identity — used by forms and pickers. */
+export type VenueValue = {
+  name: string;
+  city: string;
+  country: string;
+};
+
 export type Artist = {
   id: string;
   name: string;

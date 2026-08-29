@@ -2,8 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
+import { Chip } from "@/components/ui/chip";
+import { ThemedText } from "@/components/ui/themed-text";
+import { ThemedView } from "@/components/ui/themed-view";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import type { ConcertEvent } from "@/lib/types";
@@ -48,38 +49,6 @@ function useFilterOptions(events: ConcertEvent[]) {
 			cities: Array.from(cities).sort(),
 		};
 	}, [events]);
-}
-
-function Chip({
-	label,
-	active,
-	onPress,
-}: {
-	label: string;
-	active: boolean;
-	onPress: () => void;
-}) {
-	const theme = useTheme();
-	return (
-		<Pressable
-			onPress={onPress}
-			style={[
-				styles.chip,
-				{
-					backgroundColor: theme.backgroundElement,
-					borderColor: theme.accentWarm,
-				},
-				active && { backgroundColor: theme.accentWarm },
-			]}
-		>
-			<ThemedText
-				type="small"
-				style={active ? { color: theme.onAccent } : { color: theme.accentWarm }}
-			>
-				{label}
-			</ThemedText>
-		</Pressable>
-	);
 }
 
 function ChipRow({
@@ -159,7 +128,7 @@ export function ConcertFiltersPanel({
 							<Chip
 								key={y}
 								label={String(y)}
-								active={filters.year === y}
+								selected={filters.year === y}
 								onPress={() => toggle("year", y)}
 							/>
 						))}
@@ -169,7 +138,7 @@ export function ConcertFiltersPanel({
 							<Chip
 								key={m}
 								label={MONTH_NAMES[m - 1]}
-								active={filters.month === m}
+								selected={filters.month === m}
 								onPress={() => toggle("month", m)}
 							/>
 						))}
@@ -179,7 +148,7 @@ export function ConcertFiltersPanel({
 							<Chip
 								key={c}
 								label={c}
-								active={filters.country === c}
+								selected={filters.country === c}
 								onPress={() => toggle("country", c)}
 							/>
 						))}
@@ -189,7 +158,7 @@ export function ConcertFiltersPanel({
 							<Chip
 								key={c}
 								label={c}
-								active={filters.city === c}
+								selected={filters.city === c}
 								onPress={() => toggle("city", c)}
 							/>
 						))}
@@ -256,11 +225,5 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		flexWrap: "wrap",
 		gap: Spacing.two,
-	},
-	chip: {
-		borderRadius: Spacing.two,
-		borderWidth: 1.5,
-		paddingVertical: Spacing.one,
-		paddingHorizontal: Spacing.two,
 	},
 });

@@ -2,7 +2,7 @@ import { Colors } from "@/constants/theme";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import { useColorScheme } from "react-native";
 
-import { HeaderBackButton } from "@/components/header-back-button";
+import { HeaderBackButton } from "@/components/ui/header-back-button";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 
 const AppLightTheme = {

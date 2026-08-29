@@ -44,33 +44,58 @@ src/
     venue/
       [id].tsx             Venue detail — same pattern as artist/[id]
 
-  components/           Reusable UI, one component per file
-    button.tsx             Shared pressable button — primary/secondary/
-                          destructive variants, optional icon, loading state
-    event-form.tsx        The shared create/edit form used by event/new and
-                          event/[id] — name, dates, venue, artist lineup,
-                          delete. A "Multi-day concert" checkbox reveals the
-                          end-date and per-artist played-date fields; when off,
-                          all dates default to the start date.
-    venue-picker.tsx       Search existing venues / create a new one (used in
-                          event-form) — collapses to a summary once picked
-    artist-picker.tsx      Same pattern as venue-picker, for artists
-    artist-row.tsx         A row in the Library screen's artist list, with
-                          inline edit/delete
-    venue-row.tsx          Same, for venues
-    concert-filters.tsx    Collapsible year/month/country/city filter panel
-                          for the Concerts list, plus the matcher it uses
-    search-bar.tsx         Reusable search input used by the picker/list screens
-    header-back-button.tsx Navigation header back button with a fallback route
-                          when there's no history to pop
-    date-field.tsx          Native date picker (iOS/Android)
-    date-field.web.tsx      Web override — plain `<input type="date">`, since
-                          the native picker library has no web build. Metro
-                          picks whichever file matches the target platform.
-    event-list-item.tsx    A single concert card in the Concerts list
-    themed-*.tsx            Theme-aware Text/View/TextInput wrappers — use
-                          these instead of raw RN components so light/dark
-                          mode always has correct contrast
+  components/
+    ui/                  Generic, domain-agnostic building blocks — nothing in
+                        here knows about concerts, artists, or venues
+      themed-*.tsx          Theme-aware Text/View/TextInput wrappers — use
+                            these instead of raw RN components so light/dark
+                            mode always has correct contrast
+      button.tsx            Shared pressable button — primary/secondary/
+                            destructive variants, optional icon, loading state
+      screen.tsx           Screen scaffold — safe-area insets and the shared
+                            max content width; every top-level screen renders
+                            into one
+      card.tsx             Themed container (background + border + radius) —
+                            the base for list rows, stat cards, picker summaries
+      chip.tsx             Small pill — selectable (filters, sort) or static
+                            (stat tags)
+      segmented-control.tsx Two-or-more-option toggle row (Past/Upcoming,
+                            Artists/Venues)
+      loading-view.tsx     Full-screen centered spinner, or a centered message
+      form-field.tsx       Label + optional hint + optional error wrapper
+                            around any input control
+      text-field.tsx       form-field + themed text input — the default for
+                            text/email/password fields
+      checkbox.tsx         Labeled checkbox (used for "Multi-day concert")
+      search-bar.tsx       Reusable search input used by the picker/list screens
+      star-rating.tsx      Tap-to-rate 1–5 stars, or read-only when no handler
+      header-back-button.tsx Navigation header back button with a fallback
+                            route when there's no history to pop
+      date-field.tsx       Native date picker (iOS/Android)
+      date-field.web.tsx   Web override — plain `<input type="date">`, since
+                            the native picker library has no web build. Metro
+                            picks whichever file matches the target platform.
+
+    feature/            Components tied to this app's domain — they compose the
+                        ui/ primitives with concert/artist/venue data
+      event-form.tsx       The shared create/edit form used by event/new and
+                            event/[id] — name, dates, venue, artist lineup,
+                            delete. A "Multi-day concert" checkbox reveals the
+                            end-date and per-artist played-date fields; when
+                            off, all dates default to the start date.
+      artist-fields.tsx    One artist's row inside event-form — artist picker,
+                            played-date, rating, remove button
+      venue-fields.tsx     Name/city/country inputs, shared by venue-picker's
+                            "create" mode and the venue detail screen
+      venue-picker.tsx     Search existing venues / create a new one (used in
+                            event-form) — collapses to a summary once picked
+      artist-picker.tsx    Same pattern as venue-picker, for artists
+      artist-row.tsx       A row in the Library screen's artist list; links to
+                            the artist detail screen
+      venue-row.tsx        Same, for venues
+      event-list-item.tsx  A single concert card in the Concerts list
+      concert-filters.tsx  Collapsible year/month/country/city filter panel
+                            for the Concerts list, plus the matcher it uses
 
   lib/                  Non-UI logic
     supabase.ts            Supabase client setup (reads env vars)
@@ -79,16 +104,23 @@ src/
     auth-context.tsx       React context exposing the current session
     confirm.ts             Cross-platform confirm() dialog (browser confirm()
                           on web, native Alert elsewhere) — used before deletes
+    dates.ts               ISO date parsing/formatting helpers (shared by the
+                          date fields and concert cards)
+    validation.ts          filled() — true when every string is non-empty once
+                          trimmed
     types.ts               Shared TypeScript types for the data model
 
   hooks/
     use-event-list.ts      Fetches past/upcoming events, refetches on screen
                           focus (so edits elsewhere show up when you come back)
+    use-edit-form.ts       View/edit toggle plus save/cancel/delete state for
+                          the artist and venue detail screens
     use-theme.ts            Resolves the current light/dark color palette
     use-color-scheme.ts     Re-exports RN's useColorScheme (with a .web variant
                           that waits for hydration before reporting a scheme)
 
-  constants/theme.ts      Colors, spacing scale, fonts used throughout
+  constants/theme.ts      Colors, spacing / radius / border-width scales, and
+                        fonts used throughout
 
 supabase/schema.sql     Database schema + Row Level Security policies — run
                         this once in the Supabase SQL editor

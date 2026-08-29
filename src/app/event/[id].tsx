@@ -1,9 +1,8 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
 
-import { EventForm } from '@/components/event-form';
-import { ThemedView } from '@/components/themed-view';
+import { EventForm } from '@/components/feature/event-form';
+import { LoadingView } from '@/components/ui/loading-view';
 import { deleteEvent, getEvent, updateEvent } from '@/lib/api';
 import type { ConcertEvent, EventFormValues } from '@/lib/types';
 
@@ -40,11 +39,7 @@ export default function EventDetailScreen() {
   }, [id]);
 
   if (loading || !event) {
-    return (
-      <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
-      </ThemedView>
-    );
+    return <LoadingView />;
   }
 
   async function handleSubmit(values: EventFormValues) {
