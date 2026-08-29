@@ -1,6 +1,6 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
@@ -18,6 +18,12 @@ function toISO(date: Date): string {
 	const month = String(date.getMonth() + 1).padStart(2, "0");
 	const day = String(date.getDate()).padStart(2, "0");
 	return `${year}-${month}-${day}`;
+}
+
+function formatDisplay(value: string): string {
+	if (!value) return "";
+	const [year, month, day] = value.split("-");
+	return `${day}/${month}/${year}`;
 }
 
 export function DateField({
@@ -55,9 +61,14 @@ export function DateField({
 					},
 				]}
 			>
-				<ThemedText themeColor={value ? "text" : "textSecondary"}>
-					{value || placeholder}
-				</ThemedText>
+				<Text
+					style={[
+						styles.displayText,
+						{ color: value ? theme.text : theme.textSecondary },
+					]}
+				>
+					{value ? formatDisplay(value) : placeholder}
+				</Text>
 			</Pressable>
 			{clearable && value.length > 0 && (
 				<Pressable onPress={() => onChange("")}>
@@ -91,5 +102,9 @@ const styles = StyleSheet.create({
 		borderRadius: Spacing.two,
 		paddingHorizontal: Spacing.three,
 		paddingVertical: Spacing.two,
+	},
+	displayText: {
+		fontSize: 16,
+		fontWeight: "400",
 	},
 });

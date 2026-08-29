@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
@@ -42,7 +42,22 @@ export function DateField({
 
 	return (
 		<ThemedView style={styles.row}>
-			<ThemedView style={styles.inputWrapper}>
+			<ThemedView
+				style={[
+					styles.inputWrapper,
+					{
+						backgroundColor: theme.backgroundElement,
+						borderColor: theme.backgroundSelected,
+					},
+				]}
+			>
+				{/*
+				 * The native <input type="date"> is rendered fully invisible (opacity 0) and
+				 * stretched over the wrapper purely for interaction — click, focus, keyboard,
+				 * and the calendar popup. All visible text comes from the overlay below, so the
+				 * browser's own edit fields and their locale placeholder (e.g. "dd.mm.åååå")
+				 * are never painted at all rather than just hidden with a transparent color.
+				 */}
 				<input
 					ref={inputRef}
 					type="date"
@@ -52,26 +67,29 @@ export function DateField({
 					onChange={(e) => onChange(e.target.value)}
 					onClick={openPicker}
 					onFocus={openPicker}
+					aria-label={placeholder}
 					style={{
-						colorScheme: scheme === "dark" ? "dark" : "light",
-						color: "transparent",
-						backgroundColor: theme.backgroundElement,
-						border: `1px solid ${theme.backgroundSelected}`,
-						borderRadius: Spacing.two,
-						padding: `${Spacing.two}px ${Spacing.three}px`,
-						fontSize: 16,
-						fontFamily: "var(--font-display)",
+						position: "absolute",
+						inset: 0,
 						width: "100%",
-						boxSizing: "border-box",
+						height: "100%",
+						margin: 0,
+						padding: 0,
+						border: 0,
+						opacity: 0,
+						cursor: "pointer",
+						colorScheme: scheme === "dark" ? "dark" : "light",
 					}}
 				/>
-				<ThemedText
-					themeColor={value ? "text" : "textSecondary"}
-					style={styles.displayText}
+				<Text
+					style={[
+						styles.displayText,
+						{ color: value ? theme.text : theme.textSecondary },
+					]}
 					pointerEvents="none"
 				>
 					{value ? formatDisplay(value) : placeholder}
-				</ThemedText>
+				</Text>
 			</ThemedView>
 			{clearable && value.length > 0 && (
 				<Pressable onPress={() => onChange("")}>
@@ -92,10 +110,14 @@ const styles = StyleSheet.create({
 		flex: 1,
 		position: "relative",
 		justifyContent: "center",
+		borderWidth: 1,
+		borderRadius: Spacing.two,
+		paddingVertical: Spacing.two,
+		paddingHorizontal: Spacing.three,
+		minHeight: 42,
 	},
 	displayText: {
-		position: "absolute",
-		left: Spacing.three,
 		fontSize: 16,
+		fontWeight: "400",
 	},
 });
