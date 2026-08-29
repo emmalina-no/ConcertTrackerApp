@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet } from "react-native";
 
@@ -26,6 +27,33 @@ const defaultValues: EventFormValues = {
 	venueCountry: "",
 	artists: [emptyArtist()],
 };
+
+function Checkbox({
+	label,
+	checked,
+	onChange,
+}: {
+	label: string;
+	checked: boolean;
+	onChange: (checked: boolean) => void;
+}) {
+	const theme = useTheme();
+	return (
+		<Pressable
+			onPress={() => onChange(!checked)}
+			style={styles.checkboxRow}
+			accessibilityRole="checkbox"
+			accessibilityState={{ checked }}
+		>
+			<Ionicons
+				name={checked ? "checkbox" : "square-outline"}
+				size={22}
+				color={checked ? theme.accent : theme.textSecondary}
+			/>
+			<ThemedText type="smallBold">{label}</ThemedText>
+		</Pressable>
+	);
+}
 
 function Field({
 	label,
@@ -65,6 +93,13 @@ export function EventForm({
 	const [values, setValues] = useState<EventFormValues>(
 		initialValues ?? defaultValues,
 	);
+	const [multiDay, setMultiDay] = useState<boolean>(() => {
+		if (!initialValues) return false;
+		if (initialValues.endDate) return true;
+		return initialValues.artists.some(
+			(a) => a.playedDate && a.playedDate !== initialValues.startDate,
+		);
+	});
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [venues, setVenues] = useState<Venue[]>([]);
@@ -107,7 +142,15 @@ export function EventForm({
 		try {
 			await onSubmit({
 				...values,
-				artists: values.artists.filter((a) => a.name.trim().length > 0),
+				endDate: multiDay ? values.endDate : "",
+				artists: values.artists
+					.filter((a) => a.name.trim().length > 0)
+					.map((a) => ({
+						name: a.name,
+						playedDate: multiDay
+							? a.playedDate || values.startDate
+							: values.startDate,
+					})),
 			});
 		} catch (err) {
 			setError(err instanceof Error ? err.message : String(err));
@@ -165,18 +208,23 @@ export function EventForm({
 						onChange={(startDate) => setValues((p) => ({ ...p, startDate }))}
 					/>
 				</ThemedView>
-				<ThemedView style={styles.field}>
-					<ThemedText type="smallBold">
-						End date (leave blank if single-day)
-					</ThemedText>
-					<DateField
-						value={values.endDate}
-						onChange={(endDate) => setValues((p) => ({ ...p, endDate }))}
-						placeholder="Same as start date"
-						minDate={values.startDate ? new Date(values.startDate) : undefined}
-						clearable
-					/>
-				</ThemedView>
+				<Checkbox
+					label="Multi-day concert"
+					checked={multiDay}
+					onChange={setMultiDay}
+				/>
+				{multiDay && (
+					<ThemedView style={styles.field}>
+						<ThemedText type="smallBold">End date</ThemedText>
+						<DateField
+							value={values.endDate}
+							onChange={(endDate) => setValues((p) => ({ ...p, endDate }))}
+							placeholder="Same as start date"
+							minDate={values.startDate ? new Date(values.startDate) : undefined}
+							clearable
+						/>
+					</ThemedView>
+				)}
 				<ThemedView style={styles.field}>
 					<ThemedText type="smallBold">Venue</ThemedText>
 					<VenuePicker
@@ -221,15 +269,17 @@ export function EventForm({
 							value={artist.name}
 							onChange={(name) => updateArtist(index, { name })}
 						/>
-						<DateField
-							value={artist.playedDate}
-							onChange={(playedDate) => updateArtist(index, { playedDate })}
-							placeholder="Played date"
-							minDate={
-								values.startDate ? new Date(values.startDate) : undefined
-							}
-							maxDate={values.endDate ? new Date(values.endDate) : undefined}
-						/>
+						{multiDay && (
+							<DateField
+								value={artist.playedDate}
+								onChange={(playedDate) => updateArtist(index, { playedDate })}
+								placeholder="Played date"
+								minDate={
+									values.startDate ? new Date(values.startDate) : undefined
+								}
+								maxDate={values.endDate ? new Date(values.endDate) : undefined}
+							/>
+						)}
 						<Pressable
 							onPress={() => handleRemoveArtist(index)}
 							style={styles.removeButton}
@@ -281,6 +331,11 @@ const styles = StyleSheet.create({
 	},
 	field: {
 		gap: Spacing.one,
+	},
+	checkboxRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: Spacing.two,
 	},
 	sectionTitle: {
 		marginTop: Spacing.two,
