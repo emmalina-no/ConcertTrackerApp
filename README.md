@@ -1,6 +1,17 @@
 # Concert Tracker
 
 A personal app for logging concerts and festivals: which bands you saw, when, where, and stats like your most-seen artists and busiest year. Runs on web, iOS, and Android from one codebase.
+![Concerts](./assets/images/screenshots/concerts-snippet.png)
+![Stats](./assets/images/screenshots/stats-snippet.png)
+
+## Table of Contents
+
+- [Stack](#stack)
+- [Setup](#setup)
+- [Project structure](#project-structure)
+- [How data flows](#how-data-flows)
+- [Importing historical data](#importing-historical-data)
+- [Screenshots](#screenshots)
 
 ## Stack
 
@@ -142,3 +153,10 @@ If you're migrating from a spreadsheet, reshape it to one row per artist-perform
 ```bash
 npm run import-csv -- path/to/your-file.csv
 ```
+
+## Screenshots
+
+![Concerts page](./assets/images/screenshots/concerts.png)
+![Stats page](./assets/images/screenshots/stats.png)
+![Library page](./assets/images/screenshots/library.png)
+![New concert form](./assets/images/screenshots/new-concert.png)
