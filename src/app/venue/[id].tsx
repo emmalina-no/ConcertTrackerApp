@@ -1,8 +1,9 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/button';
 import { EventListItem } from '@/components/event-list-item';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedTextInput } from '@/components/themed-text-input';
@@ -129,12 +130,20 @@ export default function VenueDetailScreen() {
                     </ThemedText>
                   )}
                   <ThemedView style={styles.actions}>
-                    <Pressable onPress={handleSave} disabled={busy || !canSave}>
-                      {busy ? <ActivityIndicator /> : <ThemedText type="linkPrimary">Save</ThemedText>}
-                    </Pressable>
-                    <Pressable onPress={handleCancel} disabled={busy}>
-                      <ThemedText type="link">Cancel</ThemedText>
-                    </Pressable>
+                    <Button
+                      label="Save"
+                      size="sm"
+                      onPress={handleSave}
+                      disabled={!canSave}
+                      loading={busy}
+                    />
+                    <Button
+                      label="Cancel"
+                      variant="secondary"
+                      size="sm"
+                      onPress={handleCancel}
+                      disabled={busy}
+                    />
                   </ThemedView>
                 </>
               ) : (
@@ -149,18 +158,22 @@ export default function VenueDetailScreen() {
                     </ThemedText>
                   )}
                   <ThemedView style={styles.actions}>
-                    <Pressable onPress={() => setEditing(true)} disabled={busy}>
-                      <ThemedText type="linkPrimary">Edit</ThemedText>
-                    </Pressable>
-                    <Pressable onPress={handleDelete} disabled={busy}>
-                      {busy ? (
-                        <ActivityIndicator />
-                      ) : (
-                        <ThemedText type="link" themeColor="textSecondary">
-                          Delete
-                        </ThemedText>
-                      )}
-                    </Pressable>
+                    <Button
+                      label="Edit"
+                      icon="pencil"
+                      variant="secondary"
+                      size="sm"
+                      onPress={() => setEditing(true)}
+                      disabled={busy}
+                    />
+                    <Button
+                      label="Delete"
+                      icon="trash-outline"
+                      variant="destructive"
+                      size="sm"
+                      onPress={handleDelete}
+                      loading={busy}
+                    />
                   </ThemedView>
                 </>
               )}

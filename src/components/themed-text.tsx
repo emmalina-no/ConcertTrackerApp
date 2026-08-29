@@ -12,7 +12,8 @@ export type ThemedTextProps = TextProps & {
 		| "subtitle"
 		| "link"
 		| "linkPrimary"
-		| "code";
+		| "code"
+		| "destructive";
 	themeColor?: ThemeColor;
 };
 
@@ -36,6 +37,7 @@ export function ThemedText({
 				type === "link" && styles.link,
 				type === "linkPrimary" && [styles.linkPrimary, { color: theme.accent }],
 				type === "code" && styles.code,
+				type === "destructive" && { color: theme.textDestructive },
 				style,
 			]}
 			{...rest}

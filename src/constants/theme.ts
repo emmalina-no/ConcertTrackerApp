@@ -18,6 +18,7 @@ export const Colors = {
 		accentAlt: "#0E8C8C",
 		accentWarm: "#E8590C",
 		onAccent: "#FFFFFF",
+		textDestructive: "#a30000",
 	},
 	dark: {
 		text: "#F5EFFF",
@@ -29,6 +30,7 @@ export const Colors = {
 		accentAlt: "#2DD4BF",
 		accentWarm: "#FDBA5C",
 		onAccent: "#241a35",
+		textDestructive: "#cf0000",
 	},
 } as const;
 

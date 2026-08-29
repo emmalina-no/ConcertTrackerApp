@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-	ActivityIndicator,
-	Pressable,
-	ScrollView,
-	StyleSheet,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet } from "react-native";
 
 import { ArtistPicker } from "@/components/artist-picker";
+import { Button } from "@/components/button";
 import { DateField } from "@/components/date-field";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedTextInput } from "@/components/themed-text-input";
@@ -252,37 +248,21 @@ export function EventForm({
 					</ThemedText>
 				)}
 
-				<Pressable
+				<Button
+					label={submitLabel}
 					onPress={handleSubmit}
-					disabled={!canSubmit || submitting}
-					style={[
-						styles.button,
-						{
-							backgroundColor: theme.accent,
-							borderColor: theme.backgroundSelected,
-						},
-						(!canSubmit || submitting) && styles.buttonDisabled,
-					]}
-				>
-					{submitting ? (
-						<ActivityIndicator color={theme.onAccent} />
-					) : (
-						<ThemedText style={[styles.buttonText, { color: theme.onAccent }]}>
-							{submitLabel}
-						</ThemedText>
-					)}
-				</Pressable>
+					disabled={!canSubmit}
+					loading={submitting}
+					style={styles.submitButton}
+				/>
 
 				{onDelete && (
-					<Pressable
+					<Button
+						label="Delete concert"
+						variant="destructive"
 						onPress={handleDelete}
 						disabled={submitting}
-						style={styles.deleteButton}
-					>
-						<ThemedText type="link" themeColor="textSecondary">
-							Delete concert
-						</ThemedText>
-					</Pressable>
+					/>
 				)}
 			</ThemedView>
 		</ScrollView>
@@ -317,21 +297,7 @@ const styles = StyleSheet.create({
 	addArtistButton: {
 		alignSelf: "flex-start",
 	},
-	button: {
-		borderRadius: Spacing.two,
-		borderWidth: 2,
-		paddingVertical: Spacing.two + 2,
-		alignItems: "center",
+	submitButton: {
 		marginTop: Spacing.two,
-	},
-	buttonDisabled: {
-		opacity: 0.5,
-	},
-	buttonText: {
-		fontWeight: "600",
-	},
-	deleteButton: {
-		alignItems: "center",
-		paddingVertical: Spacing.two,
 	},
 });
