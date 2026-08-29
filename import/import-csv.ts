@@ -7,15 +7,15 @@
 //   EXPO_PUBLIC_SUPABASE_URL       - same as the app uses
 //   SUPABASE_SERVICE_ROLE_KEY      - service role key (Project Settings > API), NOT the anon key
 //
-// Expected CSV columns (one row per artist-performance — see plan for the full spec):
+// Expected CSV columns (one row per artist-performance):
 //   event_name, event_start_date, event_end_date, venue_name, venue_city, venue_country,
 //   artist_name, played_date, notes
-import 'dotenv/config';
+import "dotenv/config";
 
-import { readFileSync } from 'node:fs';
+import { readFileSync } from "node:fs";
 
-import { createClient } from '@supabase/supabase-js';
-import { parse } from 'csv-parse/sync';
+import { createClient } from "@supabase/supabase-js";
+import { parse } from "csv-parse/sync";
 
 type Row = {
   event_name: string;
@@ -29,9 +29,12 @@ type Row = {
   notes: string;
 };
 
-function requireId(data: { id: string } | null, error: { message: string } | null): string {
+function requireId(
+  data: { id: string } | null,
+  error: { message: string } | null,
+): string {
   if (error) throw error;
-  if (!data) throw new Error('Insert/upsert returned no row');
+  if (!data) throw new Error("Insert/upsert returned no row");
   return data.id;
 }
 
@@ -48,35 +51,38 @@ function toIsoDate(value: string): string {
 async function main() {
   const csvPath = process.argv[2];
   if (!csvPath) {
-    console.error('Usage: npx tsx scripts/import-csv.ts path/to/concerts.csv');
+    console.error("Usage: npx tsx scripts/import-csv.ts path/to/concerts.csv");
     process.exit(1);
   }
 
   const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey) {
-    console.error('Missing EXPO_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in the environment.');
+    console.error(
+      "Missing EXPO_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in the environment.",
+    );
     process.exit(1);
   }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-  const { data: users, error: usersError } = await supabase.auth.admin.listUsers();
+  const { data: users, error: usersError } =
+    await supabase.auth.admin.listUsers();
   if (usersError) throw usersError;
   if (users.users.length !== 1) {
     console.error(
       `Expected exactly one user in this Supabase project (found ${users.users.length}). ` +
-        'Set IMPORT_USER_ID explicitly if you have more than one account.'
+        "Set IMPORT_USER_ID explicitly if you have more than one account.",
     );
     process.exit(1);
   }
   const userId = process.env.IMPORT_USER_ID ?? users.users[0].id;
 
-  const rows = parse(readFileSync(csvPath, 'utf-8'), {
+  const rows = parse(readFileSync(csvPath, "utf-8"), {
     columns: true,
     skip_empty_lines: true,
     trim: true,
-    delimiter: ';',
+    delimiter: ";",
   }) as Row[];
 
   console.log(`Parsed ${rows.length} rows from ${csvPath}`);
@@ -91,12 +97,17 @@ async function main() {
     let venueId = venueIdByKey.get(venueKey);
     if (!venueId) {
       const { data, error } = await supabase
-        .from('venues')
+        .from("venues")
         .upsert(
-          { user_id: userId, name: row.venue_name, city: row.venue_city, country: row.venue_country },
-          { onConflict: 'user_id,name,city' }
+          {
+            user_id: userId,
+            name: row.venue_name,
+            city: row.venue_city,
+            country: row.venue_country,
+          },
+          { onConflict: "user_id,name,city" },
         )
-        .select('id')
+        .select("id")
         .single();
       venueId = requireId(data, error);
       venueIdByKey.set(venueKey, venueId);
@@ -105,9 +116,12 @@ async function main() {
     let artistId = artistIdByName.get(row.artist_name);
     if (!artistId) {
       const { data, error } = await supabase
-        .from('artists')
-        .upsert({ user_id: userId, name: row.artist_name }, { onConflict: 'user_id,name' })
-        .select('id')
+        .from("artists")
+        .upsert(
+          { user_id: userId, name: row.artist_name },
+          { onConflict: "user_id,name" },
+        )
+        .select("id")
         .single();
       artistId = requireId(data, error);
       artistIdByName.set(row.artist_name, artistId);
@@ -121,7 +135,7 @@ async function main() {
     let eventId = eventIdByKey.get(eventKey);
     if (!eventId) {
       const { data, error } = await supabase
-        .from('events')
+        .from("events")
         .upsert(
           {
             user_id: userId,
@@ -131,26 +145,27 @@ async function main() {
             end_date: endDate,
             notes: row.notes || null,
           },
-          { onConflict: 'user_id,name,start_date' }
+          { onConflict: "user_id,name,start_date" },
         )
-        .select('id')
+        .select("id")
         .single();
       eventId = requireId(data, error);
       eventIdByKey.set(eventKey, eventId);
     }
 
-    const { error } = await supabase
-      .from('event_artists')
-      .upsert(
-        { event_id: eventId, artist_id: artistId, played_date: playedDate },
-        { onConflict: 'event_id,artist_id,played_date', ignoreDuplicates: true }
-      );
+    const { error } = await supabase.from("event_artists").upsert(
+      { event_id: eventId, artist_id: artistId, played_date: playedDate },
+      {
+        onConflict: "event_id,artist_id,played_date",
+        ignoreDuplicates: true,
+      },
+    );
     if (error) throw error;
     inserted += 1;
   }
 
   console.log(
-    `Done. Upserted ${venueIdByKey.size} venues, ${artistIdByName.size} artists, ${eventIdByKey.size} events, ${inserted} artist-performances.`
+    `Done. Upserted ${venueIdByKey.size} venues, ${artistIdByName.size} artists, ${eventIdByKey.size} events, ${inserted} artist-performances.`,
   );
 }
 
