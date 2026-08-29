@@ -5,10 +5,10 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { ArtistPicker } from "@/components/artist-picker";
 import { Button } from "@/components/button";
 import { DateField } from "@/components/date-field";
+import { StarRating } from "@/components/star-rating";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedTextInput } from "@/components/themed-text-input";
 import { ThemedView } from "@/components/themed-view";
-import { StarRating } from "@/components/star-rating";
 import { VenuePicker } from "@/components/venue-picker";
 import { MaxContentWidth, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
@@ -224,7 +224,6 @@ export function EventForm({
             <DateField
               value={values.endDate}
               onChange={(endDate) => setValues((p) => ({ ...p, endDate }))}
-              placeholder="Same as start date"
               minDate={
                 values.startDate ? new Date(values.startDate) : undefined
               }
@@ -294,12 +293,15 @@ export function EventForm({
                 onChange={(rating) => updateArtist(index, { rating })}
               />
             </View>
-            <Pressable
+            <Button
+              icon="trash-outline"
+              variant="destructive"
+              size="sm"
               onPress={() => handleRemoveArtist(index)}
+              accessibilityLabel="Remove artist"
+              noBorder={true}
               style={styles.removeButton}
-            >
-              <ThemedText type="link">Remove</ThemedText>
-            </Pressable>
+            />
           </ThemedView>
         ))}
         <Pressable onPress={addArtist} style={styles.addArtistButton}>
@@ -356,7 +358,7 @@ const styles = StyleSheet.create({
   },
   artistRow: {
     //borderRadius: Spacing.two,
-    borderLeftWidth: 1,
+    borderBottomWidth: 1,
     padding: Spacing.half,
     gap: Spacing.one,
   },

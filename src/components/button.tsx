@@ -52,6 +52,7 @@ export function Button({
 	size = "md",
 	disabled = false,
 	loading = false,
+	noBorder = false,
 	style,
 	accessibilityLabel,
 	accessibilityHint,
@@ -69,6 +70,8 @@ export function Button({
 	disabled?: boolean;
 	/** Swaps the content for a spinner and blocks presses (implies disabled). */
 	loading?: boolean;
+	/** Drops the border, keeping the variant's background and content colors. */
+	noBorder?: boolean;
 	/** Extra container styling — layout/positioning only (margins, alignSelf, width). */
 	style?: StyleProp<ViewStyle>;
 	/** Required for icon-only buttons; defaults to `label` otherwise. */
@@ -111,6 +114,7 @@ export function Button({
 					minHeight: sizeStyle.minHeight,
 				},
 				variantStyle,
+				noBorder && styles.noBorder,
 				pressed && !isDisabled && styles.pressed,
 				isDisabled && styles.disabled,
 				style,
@@ -145,6 +149,9 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		borderWidth: 2,
 		borderRadius: Spacing.two,
+	},
+	noBorder: {
+		borderWidth: 0,
 	},
 	pressed: {
 		opacity: 0.85,
