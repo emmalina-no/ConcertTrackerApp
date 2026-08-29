@@ -19,7 +19,11 @@ function toFormValues(event: ConcertEvent): EventFormValues {
     artists: event.event_artists
       .slice()
       .sort((a, b) => a.played_date.localeCompare(b.played_date))
-      .map((ea) => ({ name: ea.artist.name, playedDate: ea.played_date })),
+      .map((ea) => ({
+        name: ea.artist.name,
+        playedDate: ea.played_date,
+        rating: ea.rating,
+      })),
   };
 }
 

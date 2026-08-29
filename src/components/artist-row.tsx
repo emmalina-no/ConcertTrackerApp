@@ -1,6 +1,7 @@
 import { Link } from "expo-router";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
+import { StarRating } from "@/components/star-rating";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Spacing } from "@/constants/theme";
@@ -27,6 +28,17 @@ export function ArtistRow({ artist }: { artist: Artist }) {
 							Times seen: {artist.timesSeen}
 						</ThemedText>
 					)}
+					{artist.averageRating != null && (
+						<View style={styles.ratingRow}>
+							<StarRating
+								value={Math.round(artist.averageRating)}
+								size={14}
+							/>
+							<ThemedText type="small" themeColor="textSecondary">
+								{artist.averageRating.toFixed(1)} ({artist.ratedCount ?? 0})
+							</ThemedText>
+						</View>
+					)}
 				</ThemedView>
 			</Pressable>
 		</Link>
@@ -38,5 +50,11 @@ const styles = StyleSheet.create({
 		borderRadius: Spacing.two,
 		borderWidth: 2,
 		padding: Spacing.three,
+	},
+	ratingRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: Spacing.two,
+		marginTop: Spacing.half,
 	},
 });

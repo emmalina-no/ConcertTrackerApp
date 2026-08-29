@@ -1,6 +1,7 @@
 import { Link } from "expo-router";
 import { Pressable, StyleSheet } from "react-native";
 
+import { StarRating } from "@/components/star-rating";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Spacing } from "@/constants/theme";
@@ -17,7 +18,13 @@ function formatDateRange(startDate: string, endDate: string) {
 	return `${formatDate(startDate)} – ${formatDate(endDate)}`;
 }
 
-export function EventListItem({ event }: { event: ConcertEvent }) {
+export function EventListItem({
+	event,
+	rating,
+}: {
+	event: ConcertEvent;
+	rating?: number | null;
+}) {
 	const theme = useTheme();
 	const artistNames = event.event_artists
 		.map((ea) => ea.artist.name)
@@ -51,6 +58,7 @@ export function EventListItem({ event }: { event: ConcertEvent }) {
 							{artistNames}
 						</ThemedText>
 					)}
+					{rating != null && <StarRating value={rating} size={14} />}
 				</ThemedView>
 			</Pressable>
 		</Link>

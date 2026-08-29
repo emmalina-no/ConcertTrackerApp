@@ -1,6 +1,8 @@
+import { averageRating } from "@/lib/ratings";
 import { supabase } from "@/lib/supabase";
 import type {
 	Artist,
+	ArtistStat,
 	ConcertEvent,
 	EventFormValues,
 	Stats,
@@ -8,7 +10,7 @@ import type {
 } from "@/lib/types";
 
 const EVENT_SELECT =
-	"*, venue:venues(*), event_artists(id, artist_id, played_date, artist:artists(*))";
+	"*, venue:venues(*), event_artists(id, artist_id, played_date, rating, artist:artists(*))";
 
 function todayISO() {
 	return new Date().toISOString().slice(0, 10);
@@ -87,16 +89,25 @@ export async function listArtists(): Promise<Artist[]> {
 	const today = todayISO();
 	const { data, error } = await supabase
 		.from("artists")
-		.select("*, event_artists(count)")
+		.select("*, event_artists(rating, played_date)")
 		.lt("event_artists.played_date", today)
 		.order("name");
 	if (error) throw error;
 	return (
-		data as unknown as (Artist & { event_artists: { count: number }[] })[]
-	).map(({ event_artists, ...artist }) => ({
-		...artist,
-		timesSeen: event_artists[0]?.count ?? 0,
-	}));
+		data as unknown as (Artist & {
+			event_artists: { rating: number | null; played_date: string }[];
+		})[]
+	).map(({ event_artists, ...artist }) => {
+		const { average, count } = averageRating(
+			event_artists.map((ea) => ea.rating),
+		);
+		return {
+			...artist,
+			timesSeen: event_artists.length,
+			averageRating: average,
+			ratedCount: count,
+		};
+	});
 }
 
 export async function getArtist(id: string): Promise<Artist> {
@@ -191,7 +202,7 @@ export async function getEventsForArtist(
 	const { data, error } = await supabase
 		.from("events")
 		.select(
-			"*, venue:venues(*), event_artists!inner(id, artist_id, played_date, artist:artists(*))",
+			"*, venue:venues(*), event_artists!inner(id, artist_id, played_date, rating, artist:artists(*))",
 		)
 		.eq("event_artists.artist_id", artistId)
 		.order("start_date", { ascending: false });
@@ -268,7 +279,7 @@ export async function updateEvent(
 async function replaceEventArtists(
 	userId: string,
 	eventId: string,
-	artists: { name: string; playedDate: string }[],
+	artists: { name: string; playedDate: string; rating: number | null }[],
 ): Promise<void> {
 	const { error: deleteError } = await supabase
 		.from("event_artists")
@@ -282,6 +293,7 @@ async function replaceEventArtists(
 			event_id: eventId,
 			artist_id: artistId,
 			played_date: artist.playedDate,
+			rating: artist.rating ?? null,
 		});
 		if (error) throw error;
 	}
@@ -302,7 +314,10 @@ export async function getStats(): Promise<Stats> {
 }
 
 function computeStats(events: ConcertEvent[]): Stats {
-	const artistCounts = new Map<string, { name: string; count: number }>();
+	const artistCounts = new Map<
+		string,
+		{ name: string; count: number; ratings: number[] }
+	>();
 	const yearCounts = new Map<number, number>();
 	const countries = new Set<string>();
 
@@ -313,22 +328,41 @@ function computeStats(events: ConcertEvent[]): Stats {
 
 		for (const eventArtist of event.event_artists) {
 			const existing = artistCounts.get(eventArtist.artist_id);
+			const ratings = existing?.ratings ?? [];
+			if (eventArtist.rating != null) ratings.push(eventArtist.rating);
 			artistCounts.set(eventArtist.artist_id, {
 				name: eventArtist.artist.name,
 				count: (existing?.count ?? 0) + 1,
+				ratings,
 			});
 		}
 	}
 
-	const topArtists = Array.from(artistCounts.entries())
-		.map(([artistId, { name, count }]) => ({
-			artistId,
-			artistName: name,
-			timesSeen: count,
-		}))
+	const artistStats: ArtistStat[] = Array.from(artistCounts.entries()).map(
+		([artistId, { name, count, ratings }]) => {
+			const { average, count: ratedCount } = averageRating(ratings);
+			return {
+				artistId,
+				artistName: name,
+				timesSeen: count,
+				averageRating: average,
+				ratedCount,
+			};
+		},
+	);
+
+	const topArtists = [...artistStats].sort(
+		(a, b) =>
+			b.timesSeen - a.timesSeen || a.artistName.localeCompare(b.artistName),
+	);
+
+	const topRatedArtists = artistStats
+		.filter((a) => a.averageRating != null)
 		.sort(
 			(a, b) =>
-				b.timesSeen - a.timesSeen || a.artistName.localeCompare(b.artistName),
+				(b.averageRating ?? 0) - (a.averageRating ?? 0) ||
+				b.ratedCount - a.ratedCount ||
+				a.artistName.localeCompare(b.artistName),
 		);
 
 	const concertsByYear = Array.from(yearCounts.entries())
@@ -345,6 +379,7 @@ function computeStats(events: ConcertEvent[]): Stats {
 
 	return {
 		topArtists,
+		topRatedArtists,
 		uniqueArtistCount: artistCounts.size,
 		concertsByYear,
 		busiestYear,

@@ -36,9 +36,14 @@ create table if not exists event_artists (
   event_id uuid not null references events (id) on delete cascade,
   artist_id uuid not null references artists (id) on delete restrict,
   played_date date not null,
+  rating smallint check (rating between 1 and 5),
   created_at timestamptz not null default now(),
   unique (event_id, artist_id, played_date)
 );
+
+-- Migration for existing databases: run this once in the Supabase SQL editor.
+alter table event_artists
+  add column if not exists rating smallint check (rating between 1 and 5);
 
 create index if not exists events_start_date_idx on events (start_date);
 create index if not exists event_artists_event_id_idx on event_artists (event_id);

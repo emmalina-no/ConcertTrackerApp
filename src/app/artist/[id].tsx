@@ -1,16 +1,18 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { EventListItem } from '@/components/event-list-item';
+import { StarRating } from '@/components/star-rating';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedTextInput } from '@/components/themed-text-input';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { deleteArtist, getArtist, getEventsForArtist, updateArtist } from '@/lib/api';
 import { confirm } from '@/lib/confirm';
+import { averageRating } from '@/lib/ratings';
 import type { Artist, ConcertEvent } from '@/lib/types';
 
 export default function ArtistDetailScreen() {
@@ -84,6 +86,10 @@ export default function ArtistDetailScreen() {
     }
   }
 
+  const { average: avgRating, count: ratedCount } = averageRating(
+    events.flatMap((e) => e.event_artists).map((ea) => ea.rating)
+  );
+
   if (loading) {
     return (
       <ThemedView style={styles.center}>
@@ -107,7 +113,12 @@ export default function ArtistDetailScreen() {
           data={events}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => <EventListItem event={item} />}
+          renderItem={({ item }) => (
+            <EventListItem
+              event={item}
+              rating={item.event_artists[0]?.rating ?? null}
+            />
+          )}
           ListHeaderComponent={
             <ThemedView style={styles.header}>
               {editing ? (
@@ -138,6 +149,18 @@ export default function ArtistDetailScreen() {
               ) : (
                 <>
                   <ThemedText type="subtitle">{artist.name}</ThemedText>
+                  {ratedCount > 0 && avgRating != null ? (
+                    <View style={styles.ratingSummary}>
+                      <StarRating value={Math.round(avgRating)} size={16} />
+                      <ThemedText type="small" themeColor="textSecondary">
+                        {avgRating.toFixed(1)} average · {ratedCount} rated
+                      </ThemedText>
+                    </View>
+                  ) : (
+                    <ThemedText type="small" themeColor="textSecondary">
+                      No ratings yet
+                    </ThemedText>
+                  )}
                   {actionError && (
                     <ThemedText type="small" themeColor="textSecondary">
                       {actionError}
@@ -198,6 +221,11 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     gap: Spacing.three,
+  },
+  ratingSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
   },
   listContent: {
     padding: Spacing.three,

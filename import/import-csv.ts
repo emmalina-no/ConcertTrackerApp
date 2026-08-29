@@ -9,7 +9,8 @@
 //
 // Expected CSV columns (one row per artist-performance):
 //   event_name, event_start_date, event_end_date, venue_name, venue_city, venue_country,
-//   artist_name, played_date, notes
+//   artist_name, played_date, notes, rating
+//   (rating is optional: an integer 1-5, or blank for "not rated")
 import "dotenv/config";
 
 import { readFileSync } from "node:fs";
@@ -27,7 +28,15 @@ type Row = {
   artist_name: string;
   played_date: string;
   notes: string;
+  rating?: string;
 };
+
+// Parses an optional "1".."5" rating cell; anything else (blank, out of range) is null.
+function toRating(value: string | undefined): number | null {
+  if (!value) return null;
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 && n <= 5 ? n : null;
+}
 
 function requireId(
   data: { id: string } | null,
@@ -154,7 +163,12 @@ async function main() {
     }
 
     const { error } = await supabase.from("event_artists").upsert(
-      { event_id: eventId, artist_id: artistId, played_date: playedDate },
+      {
+        event_id: eventId,
+        artist_id: artistId,
+        played_date: playedDate,
+        rating: toRating(row.rating),
+      },
       {
         onConflict: "event_id,artist_id,played_date",
         ignoreDuplicates: true,
