@@ -92,7 +92,7 @@ export default function LibraryScreen() {
   const mostLabel = view === "artists" ? "Most seen" : "Most been";
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       <ThemedView style={styles.toggleRow}>
         <SegmentedControl
           options={VIEW_OPTIONS}

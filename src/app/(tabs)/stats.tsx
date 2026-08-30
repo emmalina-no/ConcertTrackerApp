@@ -98,7 +98,7 @@ export default function StatsScreen() {
   }
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ThemedView style={styles.statRow}>
           <StatCard label="Concerts logged" value={stats.totalEvents} />

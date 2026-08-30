@@ -68,7 +68,7 @@ export default function ConcertsScreen() {
       : "No concerts match your search or filters.";
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       <ThemedView style={styles.toggleRow}>
         <SegmentedControl
           options={VIEW_OPTIONS}
