@@ -1,5 +1,5 @@
 import { Link } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -10,9 +10,8 @@ import {
 
 import {
   ConcertFiltersPanel,
-  EMPTY_FILTERS,
   matchesConcertFilters,
-  type ConcertFilters,
+  pruneConcertFilters,
 } from "@/components/feature/concert-filters";
 import { EventListItem } from "@/components/feature/event-list-item";
 import { Screen } from "@/components/ui/screen";
@@ -21,6 +20,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { ThemedText } from "@/components/ui/themed-text";
 import { ThemedView } from "@/components/ui/themed-view";
 import { Spacing } from "@/constants/theme";
+import { useConcertFilters } from "@/hooks/use-concert-filters";
 import { useEventList } from "@/hooks/use-event-list";
 import { useTheme } from "@/hooks/use-theme";
 
@@ -34,15 +34,30 @@ const VIEW_OPTIONS: { value: View; label: string }[] = [
 export default function ConcertsScreen() {
   const theme = useTheme();
   const [view, setView] = useState<View>("past");
-  const { events, loading, error } = useEventList(view);
+  const { events, loading, error, loadedFilter } = useEventList(view);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<ConcertFilters>(EMPTY_FILTERS);
+  const { filters, setFilters } = useConcertFilters(view);
 
   function selectView(next: View) {
     setView(next);
     setSearch("");
-    setFilters(EMPTY_FILTERS);
   }
+
+  // Once the events for this view have loaded, drop any persisted filter value
+  // that no longer exists in the data (e.g. a concert was edited or deleted).
+  useEffect(() => {
+    if (loadedFilter !== view) return;
+    const pruned = pruneConcertFilters(filters, events);
+    // Pruning only ever removes values, so a length change means something went.
+    if (
+      pruned.years.length !== filters.years.length ||
+      pruned.months.length !== filters.months.length ||
+      pruned.countries.length !== filters.countries.length ||
+      pruned.cities.length !== filters.cities.length
+    ) {
+      setFilters(pruned);
+    }
+  }, [loadedFilter, view, events, filters, setFilters]);
 
   const filteredEvents = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -60,6 +75,17 @@ export default function ConcertsScreen() {
     });
   }, [events, filters, search]);
 
+  // Show the filtered count on the active segment (once its data has loaded).
+  const viewOptions = useMemo(
+    () =>
+      VIEW_OPTIONS.map((option) =>
+        option.value === view && !loading && !error
+          ? { ...option, label: `${option.label} (${filteredEvents.length})` }
+          : option,
+      ),
+    [view, loading, error, filteredEvents.length],
+  );
+
   const emptyText =
     events.length === 0
       ? view === "upcoming"
@@ -71,7 +97,7 @@ export default function ConcertsScreen() {
     <Screen edges={["top", "bottom"]}>
       <ThemedView style={styles.toggleRow}>
         <SegmentedControl
-          options={VIEW_OPTIONS}
+          options={viewOptions}
           value={view}
           onChange={selectView}
         />

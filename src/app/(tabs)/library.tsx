@@ -82,6 +82,19 @@ export default function LibraryScreen() {
     return sortByOption(filtered, venueSort, (v) => v.timesBeen);
   }, [venues, venueSearch, venueSort]);
 
+  // Show the current count on the active segment (once data has loaded).
+  const activeCount =
+    view === "artists" ? filteredArtists.length : filteredVenues.length;
+  const viewOptions = useMemo(
+    () =>
+      VIEW_OPTIONS.map((option) =>
+        option.value === view && !loading
+          ? { ...option, label: `${option.label} (${activeCount})` }
+          : option,
+      ),
+    [view, loading, activeCount],
+  );
+
   const emptyText =
     (view === "artists" ? artists.length : venues.length) === 0
       ? `No ${view} yet.`
@@ -95,7 +108,7 @@ export default function LibraryScreen() {
     <Screen edges={["top", "bottom"]}>
       <ThemedView style={styles.toggleRow}>
         <SegmentedControl
-          options={VIEW_OPTIONS}
+          options={viewOptions}
           value={view}
           onChange={setView}
         />
